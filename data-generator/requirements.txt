@@ -1,0 +1,10 @@
+attrs==26.1.0
+authlib==1.7.2
+cachetools==7.1.4
+certifi==2026.5.20
+confluent-kafka==2.14.0
+dataclasses-avroschema==0.70.0
+faker==40.21.0
+httpx==0.28.1
+names==0.3.0
+requests==2.34.2
