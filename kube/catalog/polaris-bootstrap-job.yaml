@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: polaris-bootstrap
+spec:
+  template:
+    spec:
+      containers:
+        - name: bootstrap
+          image: apache/polaris-admin-tool:1.5.0
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "256Mi"
+          args:
+            - "bootstrap"
+            - "--realm=$(REALM)"
+            - "--credential=$(REALM),$(CLIENT_ID),$(CLIENT_SECRET)"
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+            - secretRef: # <--- THIS WAS MISSING
+                name: postgres-auth
+          env:
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: POSTGRES_PASSWORD
+      restartPolicy: OnFailure

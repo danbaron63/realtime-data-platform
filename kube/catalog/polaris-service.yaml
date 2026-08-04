@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: polaris
+  namespace: default
+spec:
+  selector:
+    app: polaris
+  ports:
+    - name: api
+      protocol: TCP
+      port: 8181
+      targetPort: 8181
+    - name: admin
+      protocol: TCP
+      port: 8182
+      targetPort: 8182

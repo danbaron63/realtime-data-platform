@@ -1,0 +1,69 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: provision-catalog
+spec:
+  template:
+    spec:
+      serviceAccountName: provisioner
+      containers:
+        - name: provision-catalog
+          image: provisioner:latest
+          imagePullPolicy: Never
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "256Mi"
+          args:
+            - "/app/provision_catalog.py"
+            - "--refresh"
+      restartPolicy: OnFailure
+      initContainers:
+        - name: wait-for-polaris
+          image: curlimages/curl:8.16.0
+          resources:
+            requests:
+              cpu: 1m
+              memory: 8Mi
+            limits:
+              cpu: 10m
+              memory: 16Mi
+          env:
+            - name: HEALTH_URL
+              value: http://polaris:8182/q/health
+          command:
+            - sh
+            - -c
+            - |
+              until curl -fsS "$HEALTH_URL"; do
+                sleep 5
+              done
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: provisioner
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: secret-writer
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: provisioner-secret-writer
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: provisioner
+roleRef:
+  kind: Role
+  name: secret-writer
+  apiGroup: rbac.authorization.k8s.io

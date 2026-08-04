@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polaris-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: polaris
+  template:
+    metadata:
+      labels:
+        app: polaris
+    spec:
+      containers:
+        - name: polaris
+          image: apache/polaris:1.5.0
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          ports:
+            - containerPort: 8181
+              name: api
+            - containerPort: 8182
+              name: admin
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+          env:
+            # FORCE the server to use the realm you just bootstrapped
+            - name: POLARIS_DEFAULT_REALM
+              value: "POLARIS"
+            # Explicitly map the password (matches your bootstrap)
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: POSTGRES_PASSWORD
+            - name: AWS_REGION
+              value: us-east-1
+            - name: AWS_ACCESS_KEY_ID
+              value: minioadmin
+            - name: AWS_SECRET_ACCESS_KEY
+              value: minioadmin
+          readinessProbe:
+            httpGet:
+              path: /q/health/ready
+              port: 8182
+            initialDelaySeconds: 15
+            periodSeconds: 10
