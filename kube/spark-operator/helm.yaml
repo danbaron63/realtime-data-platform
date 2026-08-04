@@ -1,0 +1,484 @@
+---
+# Source: spark-kubernetes-operator/templates/operator-rbac.yaml
+# Service account and rolebindings for operator
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spark-operator
+  namespace: default
+  labels:
+    app.kubernetes.io/component: operator-rbac
+    
+    app.kubernetes.io/version: "0.9.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: spark-kubernetes-operator-1.7.0
+    spark-role: operator
+---
+# Source: spark-kubernetes-operator/templates/workload-rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spark
+  namespace: default
+  labels:
+  
+    app.kubernetes.io/component: spark-workload
+    
+    app.kubernetes.io/version: "0.9.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: spark-kubernetes-operator-1.7.0
+    spark-role: operator
+  annotations:
+  
+    helm.sh/resource-policy: keep
+---
+# Source: spark-kubernetes-operator/templates/spark-operator.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spark-kubernetes-operator-configuration
+  namespace: default
+  labels:
+    app.kubernetes.io/name: spark-kubernetes-operator
+    app.kubernetes.io/component: "operator-config"
+    app.kubernetes.io/version: "0.9.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: spark-kubernetes-operator-1.7.0
+    spark-role: operator
+data:
+  log4j2.properties: |
+    # Logging Overrides
+    rootLogger.level=INFO
+    rootLogger.appenderRef.stdout.ref = console
+    appender.console.type = Console
+    appender.console.name = console
+    appender.console.target = SYSTEM_ERR
+    appender.console.layout.type = PatternLayout
+    appender.console.layout.pattern = %d{yy/MM/dd HH:mm:ss} %p %X{resource.name} %X{resource.namespace} %C{1.} %m%n%ex
+    
+  spark-operator.properties: |
+    # Runtime resolved properties
+    spark.kubernetes.operator.namespace=default
+    spark.kubernetes.operator.name=spark-kubernetes-operator
+    spark.kubernetes.operator.dynamicConfig.enabled=false
+    spark.kubernetes.operator.metrics.port=19090
+    spark.kubernetes.operator.health.probePort=19091
+    spark.kubernetes.operator.watchedNamespaces=default
+    # Property Overrides. e.g.
+    # spark.kubernetes.operator.reconciler.intervalSeconds=60
+    
+  metrics.properties: |
+    # Metrics Properties Overrides
+---
+# Source: spark-kubernetes-operator/templates/operator-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: spark-operator-clusterrole
+  labels:
+    app.kubernetes.io/component: operator-rbac
+    
+    app.kubernetes.io/version: "0.9.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: spark-kubernetes-operator-1.7.0
+    spark-role: operator
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - services
+      - configmaps
+      - persistentvolumeclaims
+      - events
+    verbs:
+      - '*'
+  - apiGroups:
+      - "apps"
+    resources:
+      - statefulsets
+    verbs:
+      - '*'
+  - apiGroups:
+      - "autoscaling"
+    resources:
+      - horizontalpodautoscalers
+    verbs:
+      - '*'
+  - apiGroups:
+      - "spark.apache.org"
+    resources:
+      - '*'
+    verbs:
+      - '*'
+  - apiGroups:
+      - "networking.k8s.io"
+    resources:
+      - ingresses
+      - networkpolicies
+    verbs:
+      - '*'
+  - apiGroups:
+      - "policy"
+    resources:
+      - poddisruptionbudgets
+    verbs:
+      - '*'
+---
+# Source: spark-kubernetes-operator/templates/workload-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: spark-workload-clusterrole
+  labels:
+  
+    app.kubernetes.io/component: spark-workload
+    
+    app.kubernetes.io/version: "0.9.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: spark-kubernetes-operator-1.7.0
+    spark-role: operator
+  annotations:
+  
+    helm.sh/resource-policy: keep
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - services
+      - configmaps
+      - persistentvolumeclaims
+    verbs:
+      - '*'
+  - apiGroups:
+      - "apps"
+    resources:
+      - statefulsets
+    verbs:
+      - '*'
+---
+# Source: spark-kubernetes-operator/templates/operator-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: spark-operator-clusterrolebinding
+  labels:
+    app.kubernetes.io/component: operator-rbac
+    
+    app.kubernetes.io/version: "0.9.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: spark-kubernetes-operator-1.7.0
+    spark-role: operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: spark-operator-clusterrole
+subjects:
+  - kind: ServiceAccount
+    name: spark-operator
+    namespace: default
+---
+# Source: spark-kubernetes-operator/templates/workload-rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: spark
+  namespace: default
+  labels:
+  
+    app.kubernetes.io/component: spark-workload
+    
+    app.kubernetes.io/version: "0.9.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: spark-kubernetes-operator-1.7.0
+    spark-role: operator
+  annotations:
+  
+    helm.sh/resource-policy: keep
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: spark-workload-clusterrole
+subjects:
+  - kind: ServiceAccount
+    name: spark
+    namespace: default
+---
+# Source: spark-kubernetes-operator/templates/spark-operator.yaml
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-kubernetes-operator
+  namespace: default
+  labels:
+    app.kubernetes.io/name: spark-kubernetes-operator
+    app.kubernetes.io/component: "operator-deployment"
+    
+    app.kubernetes.io/version: "0.9.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: spark-kubernetes-operator-1.7.0
+    spark-role: operator
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: spark-kubernetes-operator
+      app.kubernetes.io/component: "operator-deployment"
+  template:
+    metadata:
+      labels:
+        spark-role: operator
+        app.kubernetes.io/name: spark-kubernetes-operator
+        app.kubernetes.io/component: "operator-deployment"
+      annotations:
+        kubectl.kubernetes.io/default-container: spark-kubernetes-operator
+    spec:
+      serviceAccountName: spark-operator
+      containers:
+        - name: spark-kubernetes-operator
+          image: apache/spark-kubernetes-operator:0.9.0
+          imagePullPolicy: IfNotPresent
+          command: ["java", "-cp", "./spark-kubernetes-operator.jar", "$(LOG_CONFIG)", "$(OPERATOR_JAVA_OPTS)", "org.apache.spark.k8s.operator.SparkOperator"]
+          ports:
+            - containerPort: 19091
+              name: probe-port
+            - containerPort: 19090
+              name: metrics-port
+          env:
+            - name: OPERATOR_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: spark-kubernetes-operator
+            - name: LOG_CONFIG
+              value: -Dlog4j.configurationFile=/opt/spark-operator/conf/log4j2.properties
+            - name: OPERATOR_JAVA_OPTS
+              value: -Dfile.encoding=UTF8 -XX:+CrashOnOutOfMemoryError -XX:ErrorFile=/dev/stderr -XX:+UseParallelGC -XX:InitialRAMPercentage=80 -XX:MaxRAMPercentage=80 -XX:+AlwaysPreTouch -XX:+UseCompactObjectHeaders
+            - name: SPARK_USER
+              value: spark
+          resources:
+            limits:
+              cpu: 250m
+              ephemeral-storage: 512Mi
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              ephemeral-storage: 512Mi
+              memory: 512Mi
+          startupProbe:
+            httpGet:
+              port: probe-port
+              path: /healthz
+            initialDelaySeconds: 0
+            failureThreshold: 30
+            periodSeconds: 10
+            timeoutSeconds: 1
+          readinessProbe:
+            httpGet:
+              port: probe-port
+              path: /readyz
+            failureThreshold: 1
+            periodSeconds: 10
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              port: probe-port
+              path: /healthz
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 1
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            runAsUser: 185
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: spark-operator-config-volume
+              mountPath: /opt/spark-operator/conf
+            - name: logs-volume
+              mountPath: /opt/spark-operator/logs
+      restartPolicy: Always
+      volumes:
+        - name: spark-operator-config-volume
+          configMap:
+            name: spark-kubernetes-operator-configuration
+        - name: logs-volume
+          emptyDir: { }
+---
+# Source: spark-kubernetes-operator/templates/operator-rbac.yaml
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+# Source: spark-kubernetes-operator/templates/pdb.yaml
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+# Source: spark-kubernetes-operator/templates/tests/test-configmap-metadata.yaml
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+# Source: spark-kubernetes-operator/templates/workload-rbac.yaml
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+# Source: spark-kubernetes-operator/templates/tests/test-rbac.yaml
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "spark-kubernetes-operator-test-operator-rbac"
+  namespace: default
+  labels:
+    
+    app.kubernetes.io/version: "0.9.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: spark-kubernetes-operator-1.7.0
+    spark-role: operator
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+spec:
+  containers:
+    - name: kubectl
+      image: bitnamisecure/kubectl:latest
+      command: ['bash', '-c' ]
+      args: [
+        'kubectl auth can-i list sparkapplications --all-namespaces',
+        'kubectl auth can-i list sparkclusters --all-namespaces',
+        'kubectl auth can-i create pods --all-namespaces',
+        'kubectl auth can-i create services --all-namespaces',
+        'kubectl auth can-i create configmaps --all-namespaces',
+        'kubectl auth can-i create persistentvolumeclaims',
+        'kubectl auth can-i create events --all-namespaces'
+      ]
+  serviceAccountName: spark-operator
+  restartPolicy: Never
+---
+# Source: spark-kubernetes-operator/templates/tests/test-rbac.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "spark-kubernetes-operator-test-workload-rbac"
+  namespace: default
+  labels:
+    
+    app.kubernetes.io/version: "0.9.0"
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: spark-kubernetes-operator-1.7.0
+    spark-role: operator
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+spec:
+  containers:
+    - name: kubectl
+      image: bitnamisecure/kubectl:latest
+      command: ['bash', '-c' ]
+      args: [
+        'kubectl auth can-i create pods -n default',
+        'kubectl auth can-i create configmaps -n default',
+        'kubectl auth can-i create services -n default',
+        'kubectl auth can-i create persistentvolumeclaims -n default'
+      ]
+  serviceAccountName: spark
+  restartPolicy: Never
+
