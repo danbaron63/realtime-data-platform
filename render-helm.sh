@@ -18,4 +18,20 @@ helm template \
   -f redpanda-values.yaml \
   > kube/redpanda/redpanda.yaml
 
+# Spark operator
+SPARK_OPERATOR_VERSION=${1:-1.7.0}
+echo "Rendering Spark Operator version ${SPARK_OPERATOR_VERSION}"
+
+helm template \
+  --version ${SPARK_OPERATOR_VERSION} \
+  -f spark-operator-values.yaml \
+  spark spark/spark-kubernetes-operator \
+  > kube/spark-operator/helm.yaml
+
+helm show \
+  crds \
+  --version ${SPARK_OPERATOR_VERSION} \
+  spark/spark-kubernetes-operator \
+  > kube/spark-operator/crds.yaml
+
 echo "Done!"
