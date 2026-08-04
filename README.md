@@ -28,3 +28,12 @@ make apply
 ```
 
 You can then fire up K9s and watch the various pods come up.
+
+## Develop
+
+### Maintaining the repo
+
+Some of the kube deployments in this repo originate from Helm charts.
+To keep the kube deployment consistent we render the Helm charts to YAML before deploying.
+To upgrade these charts you can update the various `*-values.yaml` files and run the `render-helm.sh` script
+which will update the relevant YAML files in the `kube` directory.

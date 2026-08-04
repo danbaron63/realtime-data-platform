@@ -1,0 +1,69 @@
+from dataclasses import dataclass
+from generator.base import BaseDatabase, BaseEntity
+from datetime import datetime
+from typing import Iterable
+import random
+
+
+os = [
+    "android",
+    "ios",
+]
+
+
+@dataclass
+class Device(BaseEntity):
+    id: int
+    customer_id: int
+    first_seen_at: datetime
+    os: str
+
+    @classmethod
+    def get_constraints(cls) -> Iterable[str]:
+        return [
+            "FOREIGN KEY (customer_id) REFERENCES customer(id)",
+        ]
+
+
+@dataclass
+class LoginAttempt(BaseEntity):
+    id: int
+    customer_id: int
+    device_id: int
+    timestamp: datetime
+    success: bool
+    ip_address: str
+    country: str
+
+
+class DeviceDatabase(BaseDatabase):
+    def __init__(self, customer_db):
+        super().__init__(Device)
+        self._customer_db = customer_db
+
+    def device_registered(self) -> Device:
+        customer = self._customer_db.get_random()
+
+        device = Device(
+            id=self._get_next_id(),
+            customer_id=customer.id,
+            first_seen_at=datetime.now(),
+            os=random.choice(os),
+        )
+
+        self._insert(device)
+        return device
+
+    def login_attempted(self) -> LoginAttempt | None:
+        device = self.get_random()
+        if device:
+            return LoginAttempt(
+                id=self._get_next_id(),
+                customer_id=device.customer_id,
+                device_id=device.id,
+                timestamp=datetime.now(),
+                success=random.choice([True, False]),
+                ip_address=self._faker.ipv4(),
+                country=self._faker.country(),
+            )
+        return None

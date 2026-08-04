@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: data-generator
+spec:
+  serviceName: data-generator
+  selector:
+    matchLabels:
+      app: data-generator
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: data-generator
+    spec:
+      containers:
+        - name: data-generator
+          image: data-generator:latest
+          imagePullPolicy: Never
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "512Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
+          args:
+            - "/app/main.py"
+            - "--rate"
+            - "4"
+          env:
+            - name: REDPANDA_BROKERS
+              value: redpanda-0.redpanda.default.svc.cluster.local:9093
+            - name: SCHEMA_REGISTRY_URL
+              value: http://redpanda-0.redpanda.default.svc.cluster.local:8081
+            - name: DATABASE_PATH
+              value: "/mnt/data/data-generator.db"
+          volumeMounts:
+            - name: generator-data
+              mountPath: /mnt/data
+  volumeClaimTemplates:
+    - metadata:
+        name: generator-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

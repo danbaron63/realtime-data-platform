@@ -1,0 +1,27 @@
+statefulset:
+  replicas: 1
+resources:
+  cpu:
+    cores: 1
+  memory:
+    container:
+      max: 2Gi
+auth:
+  sasl:
+    enabled: false
+tls:
+  enabled: false
+
+# Deploy the Web UI alongside the broker automatically
+console:
+  enabled: true
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "128Mi"
+
+tests:
+  enabled: false
