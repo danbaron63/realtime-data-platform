@@ -3,7 +3,7 @@ data-generator.tar: data-generator/generator data-generator/requirements.txt dat
 	docker build -t data-generator:latest .
 	docker save -o data-generator.tar data-generator:latest
 
-provisioner.tar: provisioner
+provisioner.tar: provisioner provisioner/pinot_config
 	docker build -f provisioner/Dockerfile -t provisioner:latest provisioner
 	docker save -o provisioner.tar provisioner:latest
 
