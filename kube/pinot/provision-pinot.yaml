@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: provision-pinot
+spec:
+  ttlSecondsAfterFinished: 60
+  template:
+    spec:
+      containers:
+        - name: provision-pinot
+          image: provisioner:latest
+          imagePullPolicy: Never
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "256Mi"
+          args:
+            - "/app/provision_pinot.py"
+            - "--controller"
+            - "http://pinot-controller.default.svc.cluster.local:9000"
+            - "--config"
+            - "/app/pinot_config"
+      restartPolicy: OnFailure
+      initContainers:
+        - name: wait-for-pinot
+          image: curlimages/curl:8.16.0
+          resources:
+            requests:
+              cpu: 1m
+              memory: 8Mi
+            limits:
+              cpu: 10m
+              memory: 16Mi
+          env:
+            - name: HEALTH_URL
+              value: http://pinot-controller:9000/health
+          command:
+            - sh
+            - -c
+            - |
+              until curl -fsS "$HEALTH_URL" >/dev/null; do
+                sleep 5
+              done

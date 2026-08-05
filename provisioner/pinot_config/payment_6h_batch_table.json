@@ -1,0 +1,33 @@
+{
+  "tableName": "payment_6h_batch",
+  "tableType": "REALTIME",
+  "segmentsConfig": {
+    "timeColumnName": "window_start",
+    "schemaName": "payment_6h_batch",
+    "replicasPerPartition": "1"
+  },
+  "upsertConfig": {
+    "mode": "FULL",
+    "comparisonColumns": ["window_start"]
+  },
+  "routing": {
+    "segmentPrunerTypes": ["partition"],
+    "instanceSelectorType": "strictReplicaGroup"
+  },
+  "tenants": {},
+  "tableIndexConfig": {
+    "loadMode": "MMAP",
+    "streamConfigs": {
+      "streamType": "kafka",
+      "stream.kafka.topic.name": "featureStore.staging.payment6hInference",
+      "stream.kafka.broker.list": "redpanda-0.redpanda.default.svc.cluster.local:9093",
+      "stream.kafka.consumer.type": "lowLevel",
+      "stream.kafka.consumer.factory.class.name": "org.apache.pinot.plugin.stream.kafka20.KafkaConsumerFactory",
+      "stream.kafka.decoder.class.name": "org.apache.pinot.plugin.inputformat.avro.confluent.KafkaConfluentSchemaRegistryAvroMessageDecoder",
+      "stream.kafka.decoder.prop.schema.registry.rest.url": "http://redpanda-0.redpanda.default.svc.cluster.local:8081",
+      "realtime.segment.flush.threshold.rows": "50000",
+      "auto.offset.reset": "earliest"
+    }
+  },
+  "metadata": {}
+}

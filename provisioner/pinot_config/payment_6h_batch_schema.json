@@ -1,0 +1,26 @@
+{
+  "schemaName": "payment_6h_batch",
+  "primaryKeyColumns": ["account_id", "card_id"],
+  "dimensionFieldSpecs": [
+    { "name": "account_id", "dataType": "LONG" },
+    { "name": "card_id", "dataType": "LONG" }
+  ],
+  "metricFieldSpecs": [
+    { "name": "tx_count", "dataType": "LONG" },
+    { "name": "total_amount", "dataType": "DOUBLE" }
+  ],
+  "dateTimeFieldSpecs": [
+    {
+      "name": "window_start",
+      "dataType": "TIMESTAMP",
+      "format": "1:MILLISECONDS:EPOCH",
+      "granularity": "1:MILLISECONDS"
+    },
+    {
+      "name": "window_end",
+      "dataType": "TIMESTAMP",
+      "format": "1:MILLISECONDS:EPOCH",
+      "granularity": "1:MILLISECONDS"
+    }
+  ]
+}

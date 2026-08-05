@@ -6,6 +6,7 @@ resources:
   - data-generator
   - dbt
   - minio
+  - pinot
   - redpanda
   - spark-jobs
   - spark-operator
