@@ -1,0 +1,19 @@
+{
+  "schemaName": "login_attempted",
+  "dimensionFieldSpecs": [
+    { "name": "id", "dataType": "LONG" },
+    { "name": "customer_id", "dataType": "LONG" },
+    { "name": "device_id", "dataType": "LONG" },
+    { "name": "country", "dataType": "STRING" },
+    { "name": "success", "dataType": "BOOLEAN" },
+    { "name": "ip_address", "dataType": "STRING" }
+  ],
+  "dateTimeFieldSpecs": [
+    {
+      "name": "timestamp",
+      "dataType": "TIMESTAMP",
+      "format": "1:MILLISECONDS:EPOCH",
+      "granularity": "1:MILLISECONDS"
+    }
+  ]
+}

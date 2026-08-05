@@ -34,4 +34,17 @@ helm show \
   spark/spark-kubernetes-operator \
   > kube/spark-operator/crds.yaml
 
+# Pinot
+PINOT_VERSION=${3:-1.0.0}
+echo "Rendering Pinot version ${PINOT_VERSION}"
+
+helm repo add pinot https://raw.githubusercontent.com/apache/pinot/master/helm
+helm repo update
+
+helm template \
+  --version ${PINOT_VERSION} \
+  -f pinot-values.yaml \
+  pinot pinot/pinot \
+  > kube/pinot/helm.yaml
+
 echo "Done!"

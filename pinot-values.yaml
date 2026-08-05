@@ -1,0 +1,68 @@
+zookeeper:
+  enabled: true
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "100m"
+      memory: "256Mi"
+  persistence:
+    size: 1Gi
+
+controller:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "1Gi"
+    limits:
+      cpu: "250m"
+      memory: "1Gi"
+  jvmOpts: "-Xms512M -Xmx768M"
+  persistence:
+    enabled: true
+    size: 2Gi
+
+broker:
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "1Gi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+  jvmOpts: "-Xms512M -Xmx768M"
+  probes:
+    liveness:
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      failureThreshold: 15
+    readiness:
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      failureThreshold: 15
+
+server:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "1Gi"
+    limits:
+      cpu: "250m"
+      memory: "1Gi"
+  jvmOpts: "-Xms512M -Xmx768M"
+  persistence:
+    enabled: true
+    size: 4Gi
+
+minion:
+  enabled: false
+
+minionStateless:
+  enabled: false
+
+image:
+  tag: "1.5.1"
