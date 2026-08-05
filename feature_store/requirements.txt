@@ -1,0 +1,4 @@
+fastapi==0.139.0
+pinotdb==9.1.2
+uvicorn==0.51.0
+PyYAML==6.0.3

@@ -5,6 +5,7 @@ resources:
   - catalog
   - data-generator
   - dbt
+  - feature-store
   - minio
   - pinot
   - redpanda
