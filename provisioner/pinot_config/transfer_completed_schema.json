@@ -1,0 +1,21 @@
+{
+  "schemaName": "transfer_completed",
+  "dimensionFieldSpecs": [
+    { "name": "id", "dataType": "STRING" },
+    { "name": "source_account_id", "dataType": "STRING" },
+    { "name": "destination_account_id", "dataType": "STRING" },
+    { "name": "currency", "dataType": "STRING" },
+    { "name": "transfer_type", "dataType": "STRING" }
+  ],
+  "metricFieldSpecs": [
+    { "name":  "amount", "dataType": "DOUBLE" }
+  ],
+  "dateTimeFieldSpecs": [
+    {
+      "name": "timestamp",
+      "dataType": "TIMESTAMP",
+      "format": "1:MILLISECONDS:EPOCH",
+      "granularity": "1:MILLISECONDS"
+    }
+  ]
+}

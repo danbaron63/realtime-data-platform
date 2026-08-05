@@ -1,0 +1,23 @@
+{
+  "schemaName": "payment_authorised",
+  "dimensionFieldSpecs": [
+    { "name": "id", "dataType": "STRING" },
+    { "name": "customer_id", "dataType": "STRING" },
+    { "name": "account_id", "dataType": "STRING" },
+    { "name": "card_id", "dataType": "STRING" },
+    { "name": "merchant_id", "dataType": "STRING" },
+    { "name": "currency", "dataType": "STRING" },
+    { "name": "channel", "dataType": "STRING" }
+  ],
+  "metricFieldSpecs": [
+    { "name":  "amount", "dataType": "DOUBLE" }
+  ],
+  "dateTimeFieldSpecs": [
+    {
+      "name": "timestamp",
+      "dataType": "TIMESTAMP",
+      "format": "1:MILLISECONDS:EPOCH",
+      "granularity": "1:MILLISECONDS"
+    }
+  ]
+}
