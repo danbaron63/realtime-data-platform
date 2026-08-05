@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pinot-load
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: extract
+              image: pinot-load:latest
+              imagePullPolicy: Never
+              resources:
+                requests:
+                  cpu: "1000m"
+                  memory: "256Mi"
+              args:
+                - /app/extract.py
+                - payment_6h_inference
+              env:
+                - name: KAFKA_BROKER
+                  value: "redpanda-0.redpanda.default.svc.cluster.local:9093"
+                - name: SCHEMA_REGISTRY_URL
+                  value: "http://redpanda-0.redpanda.default.svc.cluster.local:8081"
+          restartPolicy: OnFailure

@@ -15,11 +15,16 @@ dbt.tar: dbt dbt/warehouse dbt/warehouse/models/features
 	docker build -t dbt:latest dbt
 	docker save -o dbt.tar dbt:latest
 
+pinot-load.tar: pinot-load
+	docker build -t pinot-load:latest pinot-load
+	docker save -o pinot-load.tar pinot-load:latest
+
 .PHONY: apply
-apply: data-generator.tar provisioner.tar spark-jobs.tar dbt.tar
+apply: data-generator.tar provisioner.tar spark-jobs.tar dbt.tar pinot-load.tar
 	eval $$(minikube docker-env) \
 		&& docker load --input provisioner.tar \
 		&& docker load --input spark-jobs.tar \
 		&& docker load --input data-generator.tar \
+		&& docker load --input pinot-load.tar \
 		&& docker load --input dbt.tar
 	kubectl apply -k kube --server-side --force-conflicts

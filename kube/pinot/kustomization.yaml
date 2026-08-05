@@ -3,4 +3,5 @@ kind: Kustomization
 
 resources:
   - helm.yaml
+  - pinot-load-cronjob.yaml
   - provision-pinot.yaml
