@@ -1,0 +1,25 @@
+{
+  "tableName": "payment_authorised",
+  "tableType": "REALTIME",
+  "segmentsConfig": {
+    "timeColumnName": "timestamp",
+    "schemaName": "payment_authorised",
+    "replicasPerPartition": "1"
+  },
+  "tenants": {},
+  "tableIndexConfig": {
+    "loadMode": "MMAP",
+    "streamConfigs": {
+      "streamType": "kafka",
+      "stream.kafka.topic.name": "raw.payment_authorised",
+      "stream.kafka.broker.list": "redpanda-0.redpanda.default.svc.cluster.local:9093",
+      "stream.kafka.consumer.type": "lowLevel",
+      "stream.kafka.consumer.factory.class.name": "org.apache.pinot.plugin.stream.kafka20.KafkaConsumerFactory",
+      "stream.kafka.decoder.class.name": "org.apache.pinot.plugin.inputformat.avro.confluent.KafkaConfluentSchemaRegistryAvroMessageDecoder",
+      "stream.kafka.decoder.prop.schema.registry.rest.url": "http://redpanda-0.redpanda.default.svc.cluster.local:8081",
+      "realtime.segment.flush.threshold.rows": "50000",
+      "auto.offset.reset": "earliest"
+    }
+  },
+  "metadata": {}
+}

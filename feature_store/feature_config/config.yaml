@@ -43,6 +43,77 @@ features:
     entities:
       - account_id
       - card_id
+  payment_6h:
+    sql: |
+      with transactions as (
+        select
+            id
+            ,"timestamp"
+            ,account_id
+            ,amount
+            ,currency
+            ,'WITHDRAWAL' as transaction_type
+        from atm_withdrawal
+        where account_id = (%(account_id)s)
+        and "timestamp" >= NOW() - 6 * 60 * 60 * 1000
+        union all
+        select
+            id
+            ,"timestamp"
+            ,account_id
+            ,amount
+            ,currency
+            ,'CARD_PAYMENT' as transaction_type
+        from payment_authorised
+        where account_id = (%(account_id)s)
+        and "timestamp" >= NOW() - 6 * 60 * 60 * 1000
+        union all
+        select
+            id
+            ,"timestamp"
+            ,cast(destination_account_id as bigint) as account_id
+            ,amount
+            ,currency
+            ,'TRANSFER' as transaction_type
+        from transfer_completed
+        where destination_account_id = (%(account_id)s)
+        and "timestamp" >= NOW() - 6 * 60 * 60 * 1000
+        union all
+        select
+            id
+            ,"timestamp"
+            ,cast(source_account_id as bigint) as account_id
+            ,amount
+            ,currency
+            ,'TRANSFER' as transaction_type
+        from transfer_completed
+        where source_account_id = (%(account_id)s)
+        and "timestamp" >= NOW() - 6 * 60 * 60 * 1000
+      )
+      select
+        count(*) as tx_count
+        ,sum(amount) as tx_sum
+        ,max(amount) as tx_max
+        ,min(amount) as tx_min
+        
+        ,sum(case when transaction_type = 'WITHDRAWAL' then 1 else 0 end) as withdrawal_count
+        ,sum(case when transaction_type = 'WITHDRAWAL' then amount else 0 end) as withdrawal_sum
+        ,max(case when transaction_type = 'WITHDRAWAL' then amount end) as withdrawal_max
+        ,min(case when transaction_type = 'WITHDRAWAL' then amount end) as withdrawal_min
+    
+        ,sum(case when transaction_type = 'CARD_PAYMENT' then 1 else 0 end) as card_count
+        ,sum(case when transaction_type = 'CARD_PAYMENT' then amount else 0 end) as card_sum
+        ,max(case when transaction_type = 'CARD_PAYMENT' then amount end) as card_max
+        ,min(case when transaction_type = 'CARD_PAYMENT' then amount end) as card_min
+        
+        ,sum(case when transaction_type = 'TRANSFER' then 1 else 0 end) as transfer_count
+        ,sum(case when transaction_type = 'TRANSFER' then amount else 0 end) as transfer_sum
+        ,max(case when transaction_type = 'TRANSFER' then amount end) as transfer_max
+        ,min(case when transaction_type = 'TRANSFER' then amount end) as transfer_min
+      from transactions;
+    entities:
+      - account_id
+    multi_stage_engine: true
 feature_sets:
   transactions_6h:
     features:
