@@ -1,0 +1,86 @@
+apiVersion: spark.apache.org/v1
+kind: SparkApplication
+metadata:
+  name: spark-ingestion
+spec:
+  pyFiles: local:///opt/app/raw_ingestion.py
+  driverArgs: [
+      "raw.customer_created",
+      "raw.customer_details_updated",
+      "raw.account_opened",
+      "raw.card_issued",
+      "raw.device_registered",
+      "raw.login_attempted",
+      "raw.merchant_onboarded",
+      "raw.payment_authorised",
+      "raw.atm_withdrawal",
+      "raw.transfer_completed",
+  ]
+  sparkConf:
+    spark.sql.extensions: "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
+    spark.dynamicAllocation.enabled: "true"
+    spark.dynamicAllocation.executorIdleTimeout: "30"
+    spark.dynamicAllocation.maxExecutors: "2"
+    spark.kubernetes.authenticate.driver.serviceAccountName: "spark"
+    spark.kubernetes.container.image: "spark-jobs:latest"
+    spark.log.level: "WARN"
+    spark.memory.offHeap.enabled: "true"
+    spark.memory.offHeap.size: "2g"
+    spark.executor.cores: "1"
+    spark.executor.memory: "1g"
+    spark.driver.cores: "1"
+    spark.driver.memory: "1g"
+
+    # Catalog settings
+    spark.sql.catalog.polaris: "org.apache.iceberg.spark.SparkCatalog"
+    spark.sql.catalog.polaris.warehouse: "default_catalog"
+    spark.sql.catalog.polaris.header.X-Iceberg-Access-Delegation: "false"
+    spark.sql.catalog.polaris.catalog-impl: "org.apache.iceberg.rest.RESTCatalog"
+    spark.sql.catalog.polaris.uri: "http://polaris:8181/api/catalog"
+    spark.sql.catalog.polaris.scope: "PRINCIPAL_ROLE:ALL"
+    spark.sql.catalog.polaris.token-refresh-enabled: "true"
+    spark.sql.catalog.polaris.rest.auth.type: "oauth2"
+    spark.sql.catalog.polaris.oauth2-server-uri: "http://polaris:8181/api/catalog/v1/oauth/tokens"
+
+    # Minio settings
+    spark.hadoop.fs.s3a.endpoint: "http://minio:9000"
+    spark.hadoop.fs.s3a.access.key: "minioadmin"
+    spark.hadoop.fs.s3a.secret.key: "minioadmin"
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.impl: "org.apache.hadoop.fs.s3a.S3AFileSystem"
+
+  applicationTolerations:
+    resourceRetainPolicy: Always
+    ttlAfterStopMillis: 600_000
+  runtimeVersions:
+    sparkVersion: "4.0.3"
+  driverSpec:
+    podTemplateSpec:
+      spec:
+        serviceAccountName: provisioner
+        containers:
+          - name: "driver"
+            env:
+              - name: "REDPANDA_BROKERS"
+                value: "redpanda-0.redpanda.default.svc.cluster.local:9093"
+              - name: "SCHEMA_REGISTRY_URL"
+                value: "http://redpanda-0.redpanda.default.svc.cluster.local:8081"
+              - name: "AWS_REGION"
+                value: "us-east-1"
+              - name: "POLARIS_CREDENTIAL"
+                valueFrom:
+                  secretKeyRef:
+                    name: polaris-spark-credentials
+                    key: credential
+#            imagePullPolicy: "never"
+  executorSpec:
+    podTemplateSpec:
+      spec:
+        containers:
+          - name: "executor"
+            env:
+              - name: "AWS_REGION"
+                value: "us-east-1"
+#        containers:
+#          - name: "driver"
+#            imagePullPolicy: "never"
