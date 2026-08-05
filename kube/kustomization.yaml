@@ -6,4 +6,5 @@ resources:
   - data-generator
   - minio
   - redpanda
+  - spark-jobs
   - spark-operator

@@ -1,0 +1,103 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>spark-runtime-deps</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <java.version>21</java.version>
+        <spark.version>4.0.3</spark.version>
+        <scala.binary.version>2.13</scala.binary.version>
+        <iceberg.version>1.11.0</iceberg.version>
+        <hadoop.version>3.4.1</hadoop.version>
+    </properties>
+
+    <dependencies>
+
+        <!-- Spark provides these -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Need these at runtime -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql-kafka-0-10_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-avro_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-spark-runtime-4.0_${scala.binary.version}</artifactId>
+            <version>${iceberg.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-aws</artifactId>
+            <version>${hadoop.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.datafusion</groupId>
+            <artifactId>comet-spark-spark4.0_2.13</artifactId>
+            <version>0.17.0</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+
+            <!-- Copy runtime jars into target/jars -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+
+                        <configuration>
+                            <includeScope>runtime</includeScope>
+                            <outputDirectory>
+                                ${project.build.directory}/jars
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
