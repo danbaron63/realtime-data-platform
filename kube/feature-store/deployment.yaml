@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feature-store
+spec:
+  selector:
+    matchLabels:
+      app: feature-store
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: feature-store
+    spec:
+      containers:
+      - name: feature-store
+        image: feature-store:latest
+        imagePullPolicy: Never
+        command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000"]
+        resources:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            cpu: 250m
+            memory: 64Mi
+        env:
+          - name: PINOT_BROKER
+            value: "pinot-broker.default.svc.cluster.local"
+          - name: CONFIG_PATH
+            value: "/app/feature_config/config.yaml"
+        ports:
+        - containerPort: 10000

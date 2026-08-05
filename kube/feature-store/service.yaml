@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: feature-store
+spec:
+  selector:
+    app: feature-store
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 10000
