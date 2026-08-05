@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dbt
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: dbt
+              image: dbt:latest
+              imagePullPolicy: Never
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "256Mi"
+              volumeMounts:
+                - name: profiles-config
+                  mountPath: /root/.dbt/profiles.yml
+                  subPath: profiles.yml
+          restartPolicy: OnFailure
+          initContainers:
+            - name: wait-for-polaris
+              image: curlimages/curl:8.16.0
+              resources:
+                requests:
+                  cpu: 1m
+                  memory: 8Mi
+                limits:
+                  cpu: 10m
+                  memory: 16Mi
+              env:
+                - name: HEALTH_URL
+                  value: http://trino:8080/v1/status
+              command:
+                - sh
+                - -c
+                - |
+                  until curl -fsS "$HEALTH_URL"; do
+                    sleep 5
+                  done
+          volumes:
+            - name: profiles-config
+              configMap:
+                name: dbt

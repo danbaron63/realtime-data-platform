@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trino
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trino
+  template:
+    metadata:
+      labels:
+        app: trino
+    spec:
+      initContainers:
+        - name: render-polaris-config
+          image: alpine:3.22
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eux
+
+              apk add --no-cache gettext
+
+              envsubst \
+                < /config/polaris.properties.template \
+                > /catalog/polaris.properties
+
+              echo "Generated configuration:"
+              cat /catalog/polaris.properties
+          env:
+            - name: POLARIS_CREDENTIAL
+              valueFrom:
+                secretKeyRef:
+                  name: polaris-spark-credentials
+                  key: credential
+          volumeMounts:
+            - name: polaris-template
+              mountPath: /config/polaris.properties.template
+              subPath: polaris.properties.template
+            - name: catalog-volume
+              mountPath: /catalog
+      containers:
+        - name: trino
+          image: trinodb/trino:481
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/trino/node.properties
+              subPath: node.properties
+            - name: config-volume
+              mountPath: /etc/trino/jvm.config
+              subPath: jvm.config
+            - name: config-volume
+              mountPath: /etc/trino/config.properties
+              subPath: config.properties
+            - name: catalog-volume
+              mountPath: /etc/trino/catalog
+      volumes:
+        - name: config-volume
+          configMap:
+            name: trino-config
+        - name: polaris-template
+          configMap:
+            name: trino-config
+        - name: catalog-volume
+          emptyDir: {}

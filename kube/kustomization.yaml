@@ -4,7 +4,9 @@ kind: Kustomization
 resources:
   - catalog
   - data-generator
+  - dbt
   - minio
   - redpanda
   - spark-jobs
   - spark-operator
+  - trino

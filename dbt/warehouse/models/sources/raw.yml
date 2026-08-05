@@ -1,0 +1,6 @@
+sources:
+  - name: raw
+    database: polaris
+    schema: raw
+    tables:
+      - name: payment_authorised

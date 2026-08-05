@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trino-config
+  namespace: default
+data:
+  node.properties: |
+    node.environment=minikube
+    node.data-dir=/data/trino
+  jvm.config: |
+    -server
+    -Xmx2G
+    -XX:+UseG1GC
+    -XX:G1HeapRegionSize=32M
+    -XX:+ExplicitGCInvokesConcurrent
+    -XX:+ExitOnOutOfMemoryError
+    -XX:+HeapDumpOnOutOfMemoryError
+  config.properties: |
+    coordinator=true
+    node-scheduler.include-coordinator=true
+    http-server.http.port=8080
+    discovery.uri=http://localhost:8080
+  polaris.properties.template: |
+    connector.name=iceberg
+    iceberg.catalog.type=rest
+    
+    # Polaris REST API Configuration
+    iceberg.rest-catalog.uri=http://polaris:8181/api/catalog
+    iceberg.rest-catalog.security=OAUTH2
+    
+    # 1. Aligned OAuth Credentials
+    iceberg.rest-catalog.oauth2.credential=${POLARIS_CREDENTIAL}
+    
+    # 2. REQUIRED: OAuth2 Scope and Endpoint
+    iceberg.rest-catalog.oauth2.scope=PRINCIPAL_ROLE:ALL
+    iceberg.rest-catalog.oauth2.server-uri=http://polaris:8181/api/catalog/v1/oauth/tokens
+    
+    # 3. Aligned Catalog Name
+    iceberg.rest-catalog.warehouse=default_catalog
+    
+    # MinIO Storage Configuration
+    fs.s3.enabled=true
+    s3.endpoint=http://minio:9000
+    s3.path-style-access=true
+    s3.aws-access-key=minioadmin
+    s3.aws-secret-key=minioadmin
+    s3.region=us-east-1

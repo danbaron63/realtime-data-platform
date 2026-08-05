@@ -11,10 +11,15 @@ spark-jobs.tar: spark-jobs
 	docker build -t spark-jobs:latest spark-jobs
 	docker save -o spark-jobs.tar spark-jobs:latest
 
+dbt.tar: dbt dbt/warehouse dbt/warehouse/models/features
+	docker build -t dbt:latest dbt
+	docker save -o dbt.tar dbt:latest
+
 .PHONY: apply
-apply: data-generator.tar provisioner.tar spark-jobs.tar
+apply: data-generator.tar provisioner.tar spark-jobs.tar dbt.tar
 	eval $$(minikube docker-env) \
 		&& docker load --input provisioner.tar \
 		&& docker load --input spark-jobs.tar \
-		&& docker load --input data-generator.tar
+		&& docker load --input data-generator.tar \
+		&& docker load --input dbt.tar
 	kubectl apply -k kube --server-side --force-conflicts
