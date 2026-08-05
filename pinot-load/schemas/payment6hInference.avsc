@@ -1,0 +1,21 @@
+{
+  "type": "record",
+  "name": "payment6hInference",
+  "namespace": "pinot.staging",
+  "fields": [
+    {
+      "name":  "window_start",
+      "type": "long",
+      "logicalType": "timestamp-millis"
+    },
+    {
+      "name":  "window_end",
+      "type": "long",
+      "logicalType": "timestamp-millis"
+    },
+    {"name":  "account_id", "type": "long"},
+    {"name":  "card_id", "type": "long"},
+    {"name":  "tx_count", "type": "long"},
+    {"name":  "total_amount", "type": "double"}
+  ]
+}
