@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: feature-store
+  namespace: metrics
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: feature-store
+  namespaceSelector:
+    matchNames:
+      - default
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
