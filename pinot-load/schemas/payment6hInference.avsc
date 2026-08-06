@@ -13,8 +13,8 @@
       "type": "long",
       "logicalType": "timestamp-millis"
     },
-    {"name":  "account_id", "type": "long"},
-    {"name":  "card_id", "type": "long"},
+    {"name":  "account_id", "type": "string"},
+    {"name":  "card_id", "type": "string"},
     {"name":  "tx_count", "type": "long"},
     {"name":  "total_amount", "type": "double"}
   ]

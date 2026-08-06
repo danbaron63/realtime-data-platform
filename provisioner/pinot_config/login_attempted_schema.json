@@ -1,9 +1,9 @@
 {
   "schemaName": "login_attempted",
   "dimensionFieldSpecs": [
-    { "name": "id", "dataType": "LONG" },
-    { "name": "customer_id", "dataType": "LONG" },
-    { "name": "device_id", "dataType": "LONG" },
+    { "name": "id", "dataType": "STRING" },
+    { "name": "customer_id", "dataType": "STRING" },
+    { "name": "device_id", "dataType": "STRING" },
     { "name": "country", "dataType": "STRING" },
     { "name": "success", "dataType": "BOOLEAN" },
     { "name": "ip_address", "dataType": "STRING" }

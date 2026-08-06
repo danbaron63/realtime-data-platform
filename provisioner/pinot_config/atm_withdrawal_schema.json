@@ -1,11 +1,11 @@
 {
   "schemaName": "atm_withdrawal",
   "dimensionFieldSpecs": [
-    { "name": "id", "dataType": "LONG" },
-    { "name": "account_id", "dataType": "LONG" },
-    { "name": "atm_id", "dataType": "LONG" },
-    { "name": "card_id", "dataType": "LONG" },
-    { "name": "customer_id", "dataType": "LONG" },
+    { "name": "id", "dataType": "STRING" },
+    { "name": "account_id", "dataType": "STRING" },
+    { "name": "atm_id", "dataType": "STRING" },
+    { "name": "card_id", "dataType": "STRING" },
+    { "name": "customer_id", "dataType": "STRING" },
     { "name": "currency", "dataType": "STRING" },
     { "name": "success", "dataType": "BOOLEAN" },
     { "name": "ip_address", "dataType": "STRING" }
