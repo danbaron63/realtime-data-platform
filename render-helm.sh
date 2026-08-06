@@ -49,6 +49,7 @@ helm template \
 
 # Prometheus
 PROMETHEUS_VERSION=88.1.5
+echo "Rendering Kube Prometheus Stack version ${PROMETHEUS_VERSION}"
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 
