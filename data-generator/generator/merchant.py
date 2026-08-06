@@ -20,7 +20,7 @@ merchant_categories = [
 
 @dataclass
 class Merchant(BaseEntity):
-    id: int
+    id: str
     merchant_name: str
     merchant_category: str
     country: str

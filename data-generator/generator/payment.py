@@ -13,12 +13,12 @@ channels = [
 
 @dataclass
 class Payment(BaseEntity):
-    id: int
+    id: str
     timestamp: datetime
-    customer_id: int
-    account_id: int
-    card_id: int
-    merchant_id: int
+    customer_id: str
+    account_id: str
+    card_id: str
+    merchant_id: str
     amount: float
     currency: str
     channel: str

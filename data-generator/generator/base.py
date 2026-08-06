@@ -24,7 +24,7 @@ SQL_LITE_TYPE_MAP = {
 
 @dataclass
 class BaseEntity(AvroModel, ABC):
-    id: int
+    id: str
 
     @classmethod
     def get_constraints(cls) -> Iterable[str]:
@@ -44,9 +44,9 @@ class BaseDatabase(ABC):
         self._create_table()
         self._load_records()
 
-    def _get_next_id(self):
+    def _get_next_id(self) -> str:
         self._id_counter += 1
-        return self._id_counter
+        return str(self._id_counter)
 
     def get_random(self) -> object | None:
         if len(self._database) == 0:
@@ -57,7 +57,7 @@ class BaseDatabase(ABC):
         self._insert_persistence(item)
         self._database.append(item)
 
-    def get_item(self, i: int):
+    def get_item(self, i: str):
         matches = [e for e in self._database if e.id == i]
         if len(matches) == 0:
             raise Exception(f"Item with id {i} not found in {type(self).__name__}")

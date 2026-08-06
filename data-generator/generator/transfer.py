@@ -14,7 +14,7 @@ class TransferType(StrEnum):
 
 @dataclass
 class Transfer(BaseEntity):
-    id: int
+    id: str
     timestamp: datetime
     source_account_id: str
     destination_account_id: str

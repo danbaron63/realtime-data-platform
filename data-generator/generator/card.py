@@ -9,9 +9,9 @@ max_cards_per_account = 2
 
 @dataclass
 class Card(BaseEntity):
-    id: int
-    account_id: int
-    customer_id: int
+    id: str
+    account_id: str
+    customer_id: str
     issued_at: datetime
 
 
