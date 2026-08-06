@@ -5,3 +5,4 @@ resources:
   - helm.yaml
   - crds.yaml
   - namespace.yaml
+  - feature-store-service-monitor.yaml
