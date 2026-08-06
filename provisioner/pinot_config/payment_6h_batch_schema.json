@@ -2,8 +2,8 @@
   "schemaName": "payment_6h_batch",
   "primaryKeyColumns": ["account_id", "card_id"],
   "dimensionFieldSpecs": [
-    { "name": "account_id", "dataType": "LONG" },
-    { "name": "card_id", "dataType": "LONG" }
+    { "name": "account_id", "dataType": "STRING" },
+    { "name": "card_id", "dataType": "STRING" }
   ],
   "metricFieldSpecs": [
     { "name": "tx_count", "dataType": "LONG" },

@@ -8,9 +8,9 @@ features:
         SUM(amount) as total_amount,
         COUNT(*) as total_tx
       FROM atm_withdrawal
-      WHERE account_id = (%(account_id)d)
-        AND customer_id = (%(customer_id)d)
-        AND card_id = (%(card_id)d)
+      WHERE account_id = (%(account_id)s)
+        AND customer_id = (%(customer_id)s)
+        AND card_id = (%(card_id)s)
         AND "timestamp" >= NOW() - 6 * 60 * 60 * 1000
       GROUP BY account_id, customer_id, card_id
     entities:
@@ -28,8 +28,8 @@ features:
       FROM login_attempted
       WHERE 
           "timestamp" > NOW() - 6 * 60 * 60 * 1000
-          AND customer_id = (%(customer_id)d)
-          AND device_id = (%(device_id)d)
+          AND customer_id = (%(customer_id)s)
+          AND device_id = (%(device_id)s)
       GROUP BY customer_id, device_id
     entities:
       - customer_id
@@ -38,13 +38,13 @@ features:
     sql: |
       SELECT *
       FROM payment_6h_batch
-      WHERE account_id = (%(account_id)d)
-      AND card_id = (%(card_id)d)
+      WHERE account_id = (%(account_id)s)
+      AND card_id = (%(card_id)s)
     entities:
       - account_id
       - card_id
 feature_sets:
   transactions_6h:
     features:
-      - payment_6h
+      - payment_6h_batch
       - atm_withdrawal_6h
