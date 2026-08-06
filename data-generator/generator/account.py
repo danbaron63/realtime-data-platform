@@ -21,8 +21,8 @@ currencies = [
 
 @dataclass
 class Account(BaseEntity):
-    id: int
-    customer_id: int
+    id: str
+    customer_id: str
     account_type: str
     currency: str
     opened_at: date

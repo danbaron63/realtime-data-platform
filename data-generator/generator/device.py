@@ -13,8 +13,8 @@ os = [
 
 @dataclass
 class Device(BaseEntity):
-    id: int
-    customer_id: int
+    id: str
+    customer_id: str
     first_seen_at: datetime
     os: str
 
@@ -27,9 +27,9 @@ class Device(BaseEntity):
 
 @dataclass
 class LoginAttempt(BaseEntity):
-    id: int
-    customer_id: int
-    device_id: int
+    id: str
+    customer_id: str
+    device_id: str
     timestamp: datetime
     success: bool
     ip_address: str

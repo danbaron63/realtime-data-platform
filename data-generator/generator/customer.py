@@ -114,7 +114,7 @@ class Gender(StrEnum):
 
 @dataclass
 class Customer(BaseEntity):
-    id: int
+    id: str
     created_at: datetime
     firstname: str
     lastname: str

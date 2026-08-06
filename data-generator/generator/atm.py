@@ -7,12 +7,12 @@ import random
 
 @dataclass
 class Withdrawal(BaseEntity):
-    id: int
+    id: str
     timestamp: datetime
-    customer_id: int
-    account_id: int
-    card_id: int
-    atm_id: int
+    customer_id: str
+    account_id: str
+    card_id: str
+    atm_id: str
     amount: float
     currency: str
 
@@ -43,7 +43,7 @@ class AtmDatabase(BaseDatabase):
             card_id=card.id,
             amount=random.randint(100, 30000) / 100,
             currency=account.currency,
-            atm_id=random.randint(0, 1000),
+            atm_id=str(random.randint(0, 1000)),
         )
 
         self._insert(withdrawal)
