@@ -47,4 +47,21 @@ helm template \
   pinot pinot/pinot \
   > kube/pinot/helm.yaml
 
+# Prometheus
+PROMETHEUS_VERSION=88.1.5
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+helm template \
+  --version ${PROMETHEUS_VERSION} \
+  -f kube-prometheus-stack.yaml \
+  prometheus prometheus-community/kube-prometheus-stack \
+  > kube/metrics/helm.yaml
+
+helm show \
+  crds \
+  --version ${PROMETHEUS_VERSION} \
+  prometheus-community/kube-prometheus-stack \
+  > kube/metrics/crds.yaml
+
 echo "Done!"

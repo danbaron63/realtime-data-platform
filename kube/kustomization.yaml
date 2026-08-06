@@ -6,6 +6,7 @@ resources:
   - data-generator
   - dbt
   - feature-store
+  - metrics
   - minio
   - pinot
   - redpanda
