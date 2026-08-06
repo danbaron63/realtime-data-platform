@@ -2,6 +2,7 @@ import asyncio
 from itertools import chain
 from fastapi import FastAPI, HTTPException
 from pinotdb import connect_async
+from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel, JsonValue
 from yaml import safe_load
 import os
@@ -27,6 +28,7 @@ class Config(BaseModel):
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 app = FastAPI()
+Instrumentator().instrument(app).expose(app)
 conn = connect_async(host=os.environ["PINOT_BROKER"], port=8099, path="/query/sql", scheme="http")
 config_path = os.environ["CONFIG_PATH"]
 with open(config_path) as f:
