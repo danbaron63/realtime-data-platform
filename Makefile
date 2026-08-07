@@ -23,13 +23,18 @@ feature-store.tar: feature_store feature_store/feature_config
 	docker build -f feature_store/Dockerfile -t feature-store:latest feature_store
 	docker save -o feature-store.tar feature-store:latest
 
+simulation.tar: simulation
+	docker build -t simulation:latest simulation
+	docker save -o simulation.tar simulation:latest
+
 .PHONY: apply
-apply: data-generator.tar provisioner.tar spark-jobs.tar dbt.tar pinot-load.tar feature-store.tar
+apply: data-generator.tar provisioner.tar spark-jobs.tar dbt.tar pinot-load.tar feature-store.tar simulation.tar
 	eval $$(minikube docker-env) \
 		&& docker load --input provisioner.tar \
 		&& docker load --input spark-jobs.tar \
 		&& docker load --input data-generator.tar \
 		&& docker load --input pinot-load.tar \
 		&& docker load --input feature-store.tar \
+		&& docker load --input simulation.tar \
 		&& docker load --input dbt.tar
 	kubectl apply -k kube --server-side --force-conflicts
