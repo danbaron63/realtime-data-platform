@@ -19,7 +19,16 @@
       "stream.kafka.decoder.prop.schema.registry.rest.url": "http://redpanda-0.redpanda.default.svc.cluster.local:8081",
       "realtime.segment.flush.threshold.rows": "50000",
       "auto.offset.reset": "earliest"
-    }
+    },
+    "invertedIndexColumns": [
+      "account_id"
+    ],
+    "rangeIndexColumns": [
+      "timestamp"
+    ],
+    "bloomFilterColumns": [
+      "account_id"
+    ]
   },
   "metadata": {}
 }
