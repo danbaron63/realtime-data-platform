@@ -9,6 +9,7 @@ resources:
   - minio
   - pinot
   - redpanda
+  - simulation
   - spark-jobs
   - spark-operator
   - trino
