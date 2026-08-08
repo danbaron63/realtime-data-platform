@@ -10,6 +10,15 @@ import logging
 import time
 
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+app = FastAPI()
+Instrumentator().instrument(app).expose(app)
+conn = connect_async(host=os.environ["PINOT_BROKER"], port=8099, path="/query/sql", scheme="http")
+config_path = os.environ["CONFIG_PATH"]
+
+
 class Feature(BaseModel):
     sql: str
     entities: list[str]
@@ -25,24 +34,17 @@ class Config(BaseModel):
     feature_sets: dict[str, FeatureSet]
 
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-app = FastAPI()
-Instrumentator().instrument(app).expose(app)
-conn = connect_async(host=os.environ["PINOT_BROKER"], port=8099, path="/query/sql", scheme="http")
-config_path = os.environ["CONFIG_PATH"]
+class Entity(BaseModel):
+    entity_keys: dict[str, JsonValue]
+
+
 with open(config_path) as f:
     config = safe_load(f.read())
 feature_config = Config(**config)
 
 
-class Entity(BaseModel):
-    entity_keys: dict[str, JsonValue]
-
-
 @app.post("/features/{feature}")
 async def get_features(feature: str, item: Entity):
-    start_time = time.perf_counter()
     if feature not in feature_config.features:
         raise HTTPException(status_code=404, detail=f"Feature {feature} not found")
     conf = feature_config.features[feature]
@@ -54,19 +56,19 @@ async def get_features(feature: str, item: Entity):
     logger.debug(f"{feature}: executing with sql: {sql}")
 
     curs = conn.cursor()
-    await curs.execute(
-        sql,
-        item.entity_keys,
-        queryOptions=f"useMultistageEngine={str(conf.multi_stage_engine).lower()}"
-    )
-    columns = [desc[0] for desc in curs.description]
-    record = curs.fetchone()
-    if not record:
-        return {col: None for col in columns}
-    end_time = time.perf_counter()
-    time_taken = end_time - start_time
-    logger.info(f"Request time: {time_taken}")
-    return dict(zip(columns, record))
+    try:
+        await curs.execute(
+            sql,
+            item.entity_keys,
+            queryOptions=f"useMultistageEngine={str(conf.multi_stage_engine).lower()}"
+        )
+        columns = [desc[0] for desc in curs.description]
+        record = curs.fetchone()
+        if not record:
+            return {col: None for col in columns}
+        return dict(zip(columns, record))
+    finally:
+        await curs.close()
 
 
 @app.get("/config")
