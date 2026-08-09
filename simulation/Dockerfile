@@ -6,7 +6,8 @@ COPY requirements.txt .
 RUN --mount=type=cache,id=pip-cache,target=/root/.cache/pip \
     pip install -r requirements.txt
 
-COPY main.py .
+COPY simulate_consumer.py .
+COPY freshness_probe.py .
 
 ENTRYPOINT ["python3"]
-CMD ["/app/main.py"]
+CMD ["/app/simulate_consumer.py"]

@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: freshness-probe
+  namespace: metrics
+  labels:
+    release: prometheus
+spec:
+  namespaceSelector:
+    matchNames:
+      - default
+  selector:
+    matchLabels:
+      app: freshness-probe
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s

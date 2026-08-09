@@ -1,23 +1,24 @@
+import logging
+import os
+
+import httpx
 from confluent_kafka import Consumer
-from confluent_kafka.serialization import SerializationContext, MessageField
 from confluent_kafka.schema_registry import SchemaRegistryClient
 from confluent_kafka.schema_registry.avro import AvroDeserializer
-import httpx
-import os
-import logging
-import requests
-
+from confluent_kafka.serialization import MessageField, SerializationContext
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 def main():
-    consumer = Consumer({
-        "bootstrap.servers": KAFKA_BROKER,
-        "group.id": "simulator",
-        "auto.offset.reset": "latest",
-    })
+    consumer = Consumer(
+        {
+            "bootstrap.servers": KAFKA_BROKER,
+            "group.id": "simulator",
+            "auto.offset.reset": "latest",
+        }
+    )
 
     consumer.subscribe(["raw.payment_authorised"])
     schema_registry_client = SchemaRegistryClient({"url": SCHEMA_REGISTRY_URL})
@@ -35,8 +36,7 @@ def main():
             continue
 
         record = avro_deserialiser(
-            msg.value(),
-            SerializationContext(msg.topic(), MessageField.VALUE)
+            msg.value(), SerializationContext(msg.topic(), MessageField.VALUE)
         )
 
         account_id = record["account_id"]
@@ -46,12 +46,12 @@ def main():
             headers={
                 "Content-Type": "application/json",
             },
-            json=dict(entity_keys=dict(
-                account_id=account_id,
-            ))
+            json={"entity_keys": {"account_id": account_id}},
         )
 
-        logger.info(f"{response.status_code} response for {account_id=}: {response.json()}")
+        logger.info(
+            f"{response.status_code} response for {account_id=}: {response.json()}"
+        )
 
 
 if __name__ == "__main__":
