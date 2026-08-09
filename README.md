@@ -17,7 +17,7 @@ Please install the following before attempting to run anything in this project:
 I'm personally running a Lenovo ThinkPad with an Intel Ultra 7 14-core CPU & 32GB of memory.
 To run _everything_ at once, I would recommend similar a similar number of cores and memory.
 
-## How to run it
+## How to run
 1. Start Kubernetes - with MiniKube:
 ```
 minikube start --cpus=10 --memory=18g
@@ -28,6 +28,21 @@ make apply
 ```
 
 You can then fire up K9s and watch the various pods come up.
+
+## Architecture
+![Architecture Overview](media/img.png)
+
+This architecture leverages Apache Pinot to enable high throughput, low latency querying
+and aggregating of feature data to be served through the feature store service.
+
+To source data, Kafka (RedPanda) is used to transport data from producers to both Pinot and batch ingestion 
+(Spark Structured Stream) into Iceberg tables.
+
+For batch processing we use dbt with Trino to enable high performance analytics queries.
+These queries produce batch feature tables which are then loaded into Pinot via Kafka.
+
+For storage we use MinIO with S3 compatible APIs. 
+For monitoring we use Prometheus with Grafana. 
 
 ## Develop
 
