@@ -7,7 +7,6 @@ from pydantic import BaseModel, JsonValue
 from yaml import safe_load
 import os
 import logging
-import time
 
 
 logging.basicConfig(level=logging.INFO)
@@ -15,7 +14,6 @@ logger = logging.getLogger(__name__)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 app = FastAPI()
 Instrumentator().instrument(app).expose(app)
-conn = connect_async(host=os.environ["PINOT_BROKER"], port=8099, path="/query/sql", scheme="http")
 config_path = os.environ["CONFIG_PATH"]
 
 
@@ -45,6 +43,9 @@ feature_config = Config(**config)
 
 @app.post("/features/{feature}")
 async def get_features(feature: str, item: Entity):
+    # There's a bug in pinotdb in which despite calling curs.close(), the cursor is retained.
+    #  For now the only way around this is to create a new connection per request.
+    conn = connect_async(host=os.environ["PINOT_BROKER"], port=8099, path="/query/sql", scheme="http")
     if feature not in feature_config.features:
         raise HTTPException(status_code=404, detail=f"Feature {feature} not found")
     conf = feature_config.features[feature]
@@ -68,7 +69,9 @@ async def get_features(feature: str, item: Entity):
             return {col: None for col in columns}
         return dict(zip(columns, record))
     finally:
+        logger.info("Number of cursors: %d", len(conn.cursors))
         await curs.close()
+        await conn.close()
 
 
 @app.get("/config")
