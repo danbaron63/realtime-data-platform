@@ -1,13 +1,13 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: simulation
+  name: consumer-simulation
 spec:
   ttlSecondsAfterFinished: 60
   template:
     spec:
       containers:
-        - name: simulation
+        - name: consumer-simulation
           image: simulation:latest
           imagePullPolicy: Never
           resources:
