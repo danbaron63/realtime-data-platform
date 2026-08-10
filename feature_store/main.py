@@ -69,7 +69,6 @@ async def get_features(feature: str, item: Entity):
             return {col: None for col in columns}
         return dict(zip(columns, record))
     finally:
-        logger.info("Number of cursors: %d", len(conn.cursors))
         await curs.close()
         await conn.close()
 
