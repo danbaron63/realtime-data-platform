@@ -1,0 +1,20 @@
+{
+  "schemaName": "customer_details_updated",
+  "dimensionFieldSpecs": [
+    { "name": "id", "dataType": "STRING" },
+    { "name": "firstname", "dataType": "STRING" },
+    { "name": "lastname", "dataType": "STRING" },
+    { "name": "date_of_birth", "dataType": "INT" },
+    { "name": "occupation", "dataType": "STRING" },
+    { "name": "address", "dataType": "STRING" },
+    { "name": "gender", "dataType": "STRING" }
+  ],
+  "dateTimeFieldSpecs": [
+    {
+      "name": "created_at",
+      "dataType": "TIMESTAMP",
+      "format": "1:MILLISECONDS:EPOCH",
+      "granularity": "1:MILLISECONDS"
+    }
+  ]
+}
