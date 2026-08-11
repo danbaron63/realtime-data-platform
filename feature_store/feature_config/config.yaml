@@ -114,6 +114,108 @@ features:
     entities:
       - account_id
     multi_stage_engine: true
+  customer_payment_6h:
+    sql: |
+      with customer_created_filtered as (
+      	select
+      		id
+      		,created_at
+      		,date_of_birth
+      		,occupation
+      	from customer_created 
+      	where id = (%(customer_id)s)
+      ),
+      customer_updated_filtered as (
+      	select
+      		id
+      		,created_at
+      		,date_of_birth
+      		,occupation
+      	from customer_details_updated
+      	where id = (%(customer_id)s)
+      ),
+      customer as (
+      	select
+      		id
+      		,created_at
+      		,occupation
+      	from customer_created_filtered
+      	union all 
+      	select
+      		id
+      		,created_at
+      		,occupation
+      	from customer_updated_filtered
+      ),
+      current_customer as (
+      	select
+      		id
+      		,created_at
+      		,occupation
+      	from (
+      		select
+      			id
+      			,created_at
+      			,occupation
+      			,row_number() over (order by created_at desc) as _row_number
+      		from customer
+      	)
+      	where _row_number = 1
+      ),
+      all_customer_details as (
+      	select
+      		cur.id as id
+      		,cur.created_at as last_updated
+      		,cur.occupation as current_occupation
+      		,cc.date_of_birth as date_of_birth
+      		,cc.created_at as customer_created_at
+      		,cu.customer_updates as customer_updates
+      	from current_customer cur
+      	cross join customer_created_filtered cc
+      	cross join (
+      		select count(*) as customer_updates
+      		from customer_updated_filtered
+      	) cu
+      ),
+      customer_payment as (
+      	select
+      		p.customer_id 
+      		,acd.last_updated 
+      		,acd.current_occupation 
+      		,acd.date_of_birth 
+      		,acd.customer_created_at
+      		,acd.customer_updates
+      		,p."timestamp"
+      		,p.amount 
+      		,p.currency
+      	from all_customer_details acd
+      	left join payment_authorised p
+      		on acd.id = p.customer_id
+      	where p.customer_id = (%(customer_id)s)
+      )
+      select
+      	last_updated
+      	,current_occupation 
+      	,date_of_birth 
+      	,customer_created_at
+      	,currency
+      	,customer_updates
+      	,count(*) as total_no_payments
+      	,sum(amount) as total_amount
+      from customer_payment
+      where 
+      	"timestamp" >= NOW() - interval '6' hour
+      	and currency = 'GBP'
+      group by
+      	last_updated
+      	,customer_updates
+      	,current_occupation
+      	,date_of_birth
+      	,customer_created_at
+      	,currency
+    entities:
+      - customer_id
+    multi_stage_engine: true
 feature_sets:
   transactions_6h:
     features:
