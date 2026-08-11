@@ -40,7 +40,12 @@ def main():
         )
 
         account_id = record["account_id"]
+        customer_id = record["customer_id"]
+        get_payment_features(account_id, http_client)
+        get_customer_payment_features(customer_id, http_client)
 
+
+def get_payment_features(account_id: str, http_client: httpx.Client):
         response = http_client.post(
             f"{FEATURE_STORE_URL}/features/payment_6h",
             headers={
@@ -48,9 +53,21 @@ def main():
             },
             json={"entity_keys": {"account_id": account_id}},
         )
-
         logger.info(
-            f"{response.status_code} response for {account_id=}: {response.json()}"
+            f"[payment_6h] {response.status_code} response for {account_id=}: {response.json()}"
+        )
+
+
+def get_customer_payment_features(customer_id: str, http_client: httpx.Client):
+        response = http_client.post(
+            f"{FEATURE_STORE_URL}/features/customer_payment_6h",
+            headers={
+                "Content-Type": "application/json",
+            },
+            json={"entity_keys": {"customer_id": customer_id}},
+        )
+        logger.info(
+            f"[customer_payment_6h] {response.status_code} response for {customer_id=}: {response.json()}"
         )
 
 
