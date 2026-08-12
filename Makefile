@@ -1,30 +1,29 @@
-data-generator.tar: data-generator/generator data-generator/requirements.txt data-generator/Dockerfile data-generator/main.py
-	cd data-generator && \
-	docker build -t data-generator:latest .
+data-generator.tar: images/data-generator images/data-generator images/data-generator images/data-generator
+	docker build -t data-generator:latest images/data-generator
 	docker save -o data-generator.tar data-generator:latest
 
-provisioner.tar: provisioner provisioner/pinot_config
-	docker build -f provisioner/Dockerfile -t provisioner:latest provisioner
+provisioner.tar: images/provisioner images/provisioner/pinot_config
+	docker build -t provisioner:latest images/provisioner
 	docker save -o provisioner.tar provisioner:latest
 
-spark-jobs.tar: spark-jobs
-	docker build -t spark-jobs:latest spark-jobs
+spark-jobs.tar: images/spark-jobs
+	docker build -t spark-jobs:latest images/spark-jobs
 	docker save -o spark-jobs.tar spark-jobs:latest
 
-dbt.tar: dbt dbt/warehouse dbt/warehouse/models/features
-	docker build -t dbt:latest dbt
+dbt.tar: images/dbt images/dbt images/dbt
+	docker build -t dbt:latest images/dbt
 	docker save -o dbt.tar dbt:latest
 
-pinot-load.tar: pinot-load
-	docker build -t pinot-load:latest pinot-load
+pinot-load.tar: images/pinot-load
+	docker build -t pinot-load:latest images/pinot-load
 	docker save -o pinot-load.tar pinot-load:latest
 
-feature-store.tar: feature_store feature_store/feature_config
-	docker build -f feature_store/Dockerfile -t feature-store:latest feature_store
+feature-store.tar: images/feature_store images/feature_store
+	docker build -t feature-store:latest images/feature_store
 	docker save -o feature-store.tar feature-store:latest
 
-simulation.tar: simulation
-	docker build -t simulation:latest simulation
+simulation.tar: images/simulation
+	docker build -t simulation:latest images/simulation
 	docker save -o simulation.tar simulation:latest
 
 .PHONY: apply
