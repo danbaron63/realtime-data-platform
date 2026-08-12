@@ -5,7 +5,7 @@ as its storage backend and query processing layer.
 
 ## Configuration
 
-Features can be configured in the feature store in the [config directory](./feature_config).
+Features can be configured in the feature store in the [config directory](feature_config).
 The configuration currently supports two concepts:
 1. features
 2. feature sets
