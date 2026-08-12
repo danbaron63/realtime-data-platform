@@ -15,7 +15,7 @@ helm template \
   redpanda redpanda/redpanda \
   --version ${REDPANDA_VERSION} \
   --namespace default \
-  -f redpanda-values.yaml \
+  -f helm/redpanda-values.yaml \
   > kube/redpanda/redpanda.yaml
 
 # Spark operator
@@ -24,7 +24,7 @@ echo "Rendering Spark Operator version ${SPARK_OPERATOR_VERSION}"
 
 helm template \
   --version ${SPARK_OPERATOR_VERSION} \
-  -f spark-operator-values.yaml \
+  -f helm/spark-operator-values.yaml \
   spark spark/spark-kubernetes-operator \
   > kube/spark-operator/helm.yaml
 
@@ -43,7 +43,7 @@ helm repo update
 
 helm template \
   --version ${PINOT_VERSION} \
-  -f pinot-values.yaml \
+  -f helm/pinot-values.yaml \
   pinot pinot/pinot \
   > kube/pinot/helm.yaml
 
@@ -55,7 +55,7 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 
 helm template \
   --version ${PROMETHEUS_VERSION} \
-  -f kube-prometheus-stack.yaml \
+  -f helm/kube-prometheus-stack-values.yaml \
   prometheus prometheus-community/kube-prometheus-stack \
   > kube/metrics/helm.yaml
 
