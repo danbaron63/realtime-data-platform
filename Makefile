@@ -37,3 +37,7 @@ apply: data-generator.tar provisioner.tar spark-jobs.tar dbt.tar pinot-load.tar 
 		&& docker load --input simulation.tar \
 		&& docker load --input dbt.tar
 	kubectl apply -k kube --server-side --force-conflicts
+
+.PHONY: render-helm
+render-helm:
+	./helm/render-helm.sh
