@@ -1,8 +1,18 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+namespace: metrics
+
 resources:
   - helm.yaml
   - crds.yaml
   - namespace.yaml
   - feature-store-service-monitor.yaml
+
+configMapGenerator:
+  - name: grafana-feature-store-dashboard
+    files:
+      - dashboards/feature-store.json
+    options:
+      labels:
+        grafana_dashboard: "1"
