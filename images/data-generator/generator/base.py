@@ -38,11 +38,15 @@ class BaseDatabase(ABC):
     def __init__(self, entity_type: type[BaseEntity]):
         self._faker = Faker()
         self._database = list()
-        self._id_counter = 0
         self._persistence = Persistence()
         self._entity_type = entity_type
         self._create_table()
         self._load_records()
+        max_id_value = list(self._persistence.query(
+            f"SELECT max(cast(id as integer)) FROM {self._entity_type.__name__}"
+        ))[0][0]
+        self._id_counter = int(max_id_value) if max_id_value else 0
+        logger.info(f"Initialised {self._entity_type} with {self._id_counter=}")
 
     def _get_next_id(self) -> str:
         self._id_counter += 1
