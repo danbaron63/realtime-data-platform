@@ -18,7 +18,7 @@
       "stream.kafka.decoder.class.name": "org.apache.pinot.plugin.inputformat.avro.confluent.KafkaConfluentSchemaRegistryAvroMessageDecoder",
       "stream.kafka.decoder.prop.schema.registry.rest.url": "http://redpanda-0.redpanda.default.svc.cluster.local:8081",
       "realtime.segment.flush.threshold.rows": "50000",
-      "auto.offset.reset": "earliest"
+      "stream.kafka.consumer.prop.auto.offset.reset": "smallest"
     },
     "invertedIndexColumns": [
       "id"
