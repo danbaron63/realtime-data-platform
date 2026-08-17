@@ -126,16 +126,32 @@ def main(config_dir: str, controller_url: str):
     existing_schemas = set(get_schemas(controller_url))
     new_schemas_names = set([s["schemaName"] for s in schemas])
     delete_schemas = existing_schemas - new_schemas_names
+
+    exceptions = []
+
     for schema in delete_schemas:
-        delete_schema(controller_url, schema)
+        try:
+            delete_schema(controller_url, schema)
+        except Exception as e:
+            exceptions.append(e)
 
     # Ensure schemas are upserted before tables
     for schema in schemas:
-        upsert_schema(schema, controller_url)
+        try:
+            upsert_schema(schema, controller_url)
+        except Exception as e:
+            exceptions.append(e)
 
     for table in tables:
-        upsert_table(table, controller_url)
+        try:
+            upsert_table(table, controller_url)
+        except Exception as e:
+            exceptions.append(e)
 
+    if exceptions:
+        for e in exceptions:
+            logger.error(e)
+        raise ExceptionGroup("Some pinot operations failed", tuple(exceptions))
     logger.info("Pinot provisioning complete")
 
 
