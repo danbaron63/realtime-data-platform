@@ -1,4 +1,4 @@
-data-generator.tar: images/data-generator images/data-generator images/data-generator images/data-generator
+data-generator.tar: images/data-generator images/data-generator/generator
 	docker build -t data-generator:latest images/data-generator
 	docker save -o data-generator.tar data-generator:latest
 
@@ -18,7 +18,7 @@ pinot-load.tar: images/pinot-load
 	docker build -t pinot-load:latest images/pinot-load
 	docker save -o pinot-load.tar pinot-load:latest
 
-feature-store.tar: images/feature_store images/feature_store
+feature-store.tar: images/feature_store images/feature_store/feature_config
 	docker build -t feature-store:latest images/feature_store
 	docker save -o feature-store.tar feature-store:latest
 
