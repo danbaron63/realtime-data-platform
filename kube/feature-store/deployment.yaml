@@ -26,7 +26,7 @@ spec:
             memory: 128Mi
         env:
           - name: PINOT_BROKER
-            value: "pinot-broker.default.svc.cluster.local"
+            value: "http://pinot-broker.default.svc.cluster.local:8099"
           - name: CONFIG_PATH
             value: "/app/feature_config/config.yaml"
         ports:

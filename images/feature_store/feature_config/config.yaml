@@ -8,9 +8,9 @@ features:
         SUM(amount) as total_amount,
         COUNT(*) as total_tx
       FROM atm_withdrawal
-      WHERE account_id = (%(account_id)s)
-        AND customer_id = (%(customer_id)s)
-        AND card_id = (%(card_id)s)
+      WHERE account_id = '{account_id}'
+        AND customer_id = '{customer_id}'
+        AND card_id = '{card_id}'
         AND "timestamp" >= NOW() - 6 * 60 * 60 * 1000
       GROUP BY account_id, customer_id, card_id
     entities:
@@ -28,8 +28,8 @@ features:
       FROM login_attempted
       WHERE 
           "timestamp" > NOW() - 6 * 60 * 60 * 1000
-          AND customer_id = (%(customer_id)s)
-          AND device_id = (%(device_id)s)
+          AND customer_id = '{customer_id}'
+          AND device_id = '{device_id}'
       GROUP BY customer_id, device_id
     entities:
       - customer_id
@@ -38,8 +38,8 @@ features:
     sql: |
       SELECT *
       FROM payment_6h_batch
-      WHERE account_id = (%(account_id)s)
-      AND card_id = (%(card_id)s)
+      WHERE account_id = '{account_id}'
+      AND card_id = '{card_id}'
     entities:
       - account_id
       - card_id
@@ -54,7 +54,7 @@ features:
             ,currency
             ,'WITHDRAWAL' as transaction_type
         from atm_withdrawal
-        where account_id = (%(account_id)s)
+        where account_id = '{account_id}'
         and "timestamp" >= NOW() - 6 * 60 * 60 * 1000
         union all
         select
@@ -65,7 +65,7 @@ features:
             ,currency
             ,'CARD_PAYMENT' as transaction_type
         from payment_authorised
-        where account_id = (%(account_id)s)
+        where account_id = '{account_id}'
         and "timestamp" >= NOW() - 6 * 60 * 60 * 1000
         union all
         select
@@ -76,7 +76,7 @@ features:
             ,currency
             ,'TRANSFER' as transaction_type
         from transfer_completed
-        where destination_account_id = (%(account_id)s)
+        where destination_account_id = '{account_id}'
         and "timestamp" >= NOW() - 6 * 60 * 60 * 1000
         union all
         select
@@ -87,7 +87,7 @@ features:
             ,currency
             ,'TRANSFER' as transaction_type
         from transfer_completed
-        where source_account_id = (%(account_id)s)
+        where source_account_id = '{account_id}'
         and "timestamp" >= NOW() - 6 * 60 * 60 * 1000
       )
       select
@@ -117,102 +117,100 @@ features:
   customer_payment_6h:
     sql: |
       with customer_created_filtered as (
-      	select
-      		id
-      		,created_at
-      		,date_of_birth
-      		,occupation
-      	from customer_created 
-      	where id = (%(customer_id)s)
+        select
+          id
+          ,created_at
+          ,date_of_birth
+          ,occupation
+        from customer_created
+        where id = '{customer_id}'
       ),
       customer_updated_filtered as (
-      	select
-      		id
-      		,created_at
-      		,date_of_birth
-      		,occupation
-      	from customer_details_updated
-      	where id = (%(customer_id)s)
+        select 
+          id
+          ,created_at
+          ,date_of_birth
+          ,occupation
+        from customer_details_updated
+        where id = '{customer_id}'
       ),
       customer as (
-      	select
-      		id
-      		,created_at
-      		,occupation
-      	from customer_created_filtered
-      	union all 
-      	select
-      		id
-      		,created_at
-      		,occupation
-      	from customer_updated_filtered
+        select
+          id
+          ,created_at
+          ,occupation
+          ,0 as rank
+        from customer_created_filtered
+        union all
+        select
+          id
+          ,created_at
+          ,occupation
+          ,1 as rank
+        from customer_updated_filtered
       ),
       current_customer as (
-      	select
-      		id
-      		,created_at
-      		,occupation
-      	from (
-      		select
-      			id
-      			,created_at
-      			,occupation
-      			,row_number() over (order by created_at desc) as _row_number
-      		from customer
-      	)
-      	where _row_number = 1
+        select
+          id
+          ,created_at
+          ,occupation
+          ,rank
+        from (
+          select
+            *
+            ,row_number() over (order by created_at desc, rank desc) as rn
+          from customer
+        )
+        where rn = 1
       ),
       all_customer_details as (
-      	select
-      		cur.id as id
-      		,cur.created_at as last_updated
-      		,cur.occupation as current_occupation
-      		,cc.date_of_birth as date_of_birth
-      		,cc.created_at as customer_created_at
-      		,cu.customer_updates as customer_updates
-      	from current_customer cur
-      	cross join customer_created_filtered cc
-      	cross join (
-      		select count(*) as customer_updates
-      		from customer_updated_filtered
-      	) cu
+        select
+          cur.id as id
+          ,cur.created_at as last_updated
+          ,cur.occupation as current_occupation
+          ,cc.date_of_birth as date_of_birth
+          ,cc.created_at as customer_created_at
+          ,cu.customer_updates as customer_updates
+        from current_customer cur
+          cross join customer_created_filtered cc
+          cross join (
+            select count(*) as customer_updates
+            from customer_updated_filtered
+          ) cu
       ),
       customer_payment as (
-      	select
-      		p.customer_id 
-      		,acd.last_updated 
-      		,acd.current_occupation 
-      		,acd.date_of_birth 
-      		,acd.customer_created_at
-      		,acd.customer_updates
-      		,p."timestamp"
-      		,p.amount 
-      		,p.currency
-      	from all_customer_details acd
-      	left join payment_authorised p
-      		on acd.id = p.customer_id
-      	where p.customer_id = (%(customer_id)s)
+        select 
+          acd.id as customer_id
+          ,acd.last_updated
+          ,acd.current_occupation
+          ,acd.date_of_birth
+          ,acd.customer_created_at
+          ,acd.customer_updates
+          ,p."timestamp"
+          ,p.amount
+          ,p.currency
+        from all_customer_details acd
+          left join payment_authorised p on acd.id = p.customer_id
+          and p.currency = 'GBP'
+          and p."timestamp" >= NOW() - interval '6' hour
       )
       select
-      	last_updated
-      	,current_occupation 
-      	,date_of_birth 
-      	,customer_created_at
-      	,currency
-      	,customer_updates
-      	,count(*) as total_no_payments
-      	,sum(amount) as total_amount
+        last_updated
+        ,current_occupation 
+        ,date_of_birth 
+        ,customer_created_at
+        ,'GBP' as currency
+        ,customer_updates
+        ,count(amount) as total_no_payments
+        ,coalesce(sum(amount), 0) as total_amount
       from customer_payment
-      where 
-      	"timestamp" >= NOW() - interval '6' hour
-      	and currency = 'GBP'
       group by
-      	last_updated
-      	,customer_updates
-      	,current_occupation
-      	,date_of_birth
-      	,customer_created_at
-      	,currency
+        last_updated
+        ,customer_updates
+        ,current_occupation
+        ,date_of_birth
+        ,customer_created_at
+        ,currency
     entities:
       - customer_id
     multi_stage_engine: true
