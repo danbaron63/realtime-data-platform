@@ -6,12 +6,14 @@ from confluent_kafka import Consumer
 from confluent_kafka.schema_registry import SchemaRegistryClient
 from confluent_kafka.schema_registry.avro import AvroDeserializer
 from confluent_kafka.serialization import MessageField, SerializationContext
+from prometheus_client import Histogram, start_http_server
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 def main():
+    start_http_server(8000)
     consumer = Consumer(
         {
             "bootstrap.servers": KAFKA_BROKER,
