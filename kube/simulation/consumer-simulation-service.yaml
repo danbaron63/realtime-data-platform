@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: consumer-simulation
+  labels:
+    app: consumer-simulation
+spec:
+  selector:
+    app: consumer-simulation
+  ports:
+    - name: metrics
+      port: 8000
+      targetPort: metrics
