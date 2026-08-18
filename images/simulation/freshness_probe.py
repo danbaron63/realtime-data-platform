@@ -16,7 +16,7 @@ from prometheus_client import Histogram, start_http_server
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
-http_client = httpx.Client(timeout=5)
+http_client = httpx.Client(timeout=0.5)
 AMOUNT = 100.0
 CURRENCY = "GBP"
 CHANNEL = "TEST"
@@ -68,28 +68,34 @@ def freshness_check(
     kafka_acked_ns = kafka_acked_time_ns - event_creation_ns
 
     last_request_ns = kafka_acked_time_ns
-    requests = 1
+    requests = 0
 
     while True:
-        response = http_client.post(
-            f"{FEATURE_STORE_URL}/features/payment_6h",
-            headers={
-                "Content-Type": "application/json",
-            },
-            json={"entity_keys": {"account_id": trace_account_id}},
-        )
-
-        response_ns = time.perf_counter_ns()
-        time_taken_upper_bound_ns = response_ns - event_creation_ns
-        time_taken_lower_bound_ns = last_request_ns - event_creation_ns
+        requests += 1
 
         try:
+            response = http_client.post(
+                f"{FEATURE_STORE_URL}/features/payment_6h",
+                headers={
+                    "Content-Type": "application/json",
+                },
+                json={"entity_keys": {"account_id": trace_account_id}},
+            )
             response.raise_for_status()
         except httpx.HTTPError as e:
             logger.error(
                 f"Error response from feature store ({response.status_code}): {e}"
             )
             continue
+        except httpx.TimeoutException as e:
+            logger.error(
+                f"Timeout waiting for feature store: {e}"
+            )
+            continue
+        finally:
+            response_ns = time.perf_counter_ns()
+            time_taken_upper_bound_ns = response_ns - event_creation_ns
+            time_taken_lower_bound_ns = last_request_ns - event_creation_ns
 
         features = response.json()
         tx_count = features["tx_count"]
@@ -110,7 +116,6 @@ def freshness_check(
             break
 
         last_request_ns = response_ns
-        requests += 1
         time.sleep(0.005)
 
 
