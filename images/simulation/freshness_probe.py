@@ -37,17 +37,17 @@ def freshness_check(
 
     event_creation_ns = time.perf_counter_ns()
 
-    event = dict(
-        id=trace_id,
-        timestamp=datetime.datetime.now(datetime.UTC),
-        account_id=trace_account_id,
-        customer_id=trace_customer_id,
-        card_id=trace_card_id,
-        merchant_id=trace_merchant_id,
-        amount=AMOUNT,
-        currency=CURRENCY,
-        channel=CHANNEL,
-    )
+    event = {
+        "id": trace_id,
+        "timestamp": datetime.datetime.now(datetime.UTC),
+        "account_id": trace_account_id,
+        "customer_id": trace_customer_id,
+        "card_id": trace_card_id,
+        "merchant_id": trace_merchant_id,
+        "amount": AMOUNT,
+        "currency": CURRENCY,
+        "channel": CHANNEL,
+    }
 
     serialised_record = avro_serializer(
         event,
@@ -85,8 +85,10 @@ def freshness_check(
 
         try:
             response.raise_for_status()
-        except Exception as e:
-            logger.error(f"Error response from feature store ({response.status_code}): {e}")
+        except httpx.HTTPError as e:
+            logger.error(
+                f"Error response from feature store ({response.status_code}): {e}"
+            )
             continue
 
         features = response.json()
