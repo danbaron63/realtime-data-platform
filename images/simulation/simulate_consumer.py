@@ -2,15 +2,15 @@ import logging
 import os
 import queue
 import signal
-import time
 import threading
+import time
 
 import httpx
 from confluent_kafka import Consumer
 from confluent_kafka.schema_registry import SchemaRegistryClient
 from confluent_kafka.schema_registry.avro import AvroDeserializer
 from confluent_kafka.serialization import MessageField, SerializationContext
-from prometheus_client import Gauge, Counter, start_http_server
+from prometheus_client import Counter, Gauge, start_http_server
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,18 +26,19 @@ def main():
     event_queue = queue.Queue(maxsize=1000)
     event_queue_size_gauge = Gauge(
         "simulate_consumer_event_queue_size_gauge",
-        "approximate size of the internal event queue of simulate_consumer"
+        "approximate size of the internal event queue of simulate_consumer",
     )
     feature_store_responses_counter = Counter(
         "simulate_consumer_feature_store_responses_counter",
         "counter of the responses from the feature store",
-        labelnames=["feature", "http_status_code"]
+        labelnames=["feature", "http_status_code"],
     )
 
     workers = [
         threading.Thread(
             target=worker, args=(i, event_queue, feature_store_responses_counter)
-        ) for i in range(20)
+        )
+        for i in range(20)
     ]
 
     for thread in workers:
@@ -53,7 +54,9 @@ def main():
         thread.join()
 
 
-def worker(worker_id: int, event_queue: queue.Queue, feature_store_responses_counter: Counter):
+def worker(
+    worker_id: int, event_queue: queue.Queue, feature_store_responses_counter: Counter
+):
     http_client = httpx.Client(timeout=5)
 
     try:
@@ -64,12 +67,16 @@ def worker(worker_id: int, event_queue: queue.Queue, feature_store_responses_cou
                 continue
 
             try:
-                time.sleep(.15)
+                time.sleep(0.15)
 
                 account_id = record["account_id"]
                 customer_id = record["customer_id"]
-                get_payment_features(account_id, http_client, feature_store_responses_counter)
-                get_customer_payment_features(customer_id, http_client, feature_store_responses_counter)
+                get_payment_features(
+                    account_id, http_client, feature_store_responses_counter
+                )
+                get_customer_payment_features(
+                    customer_id, http_client, feature_store_responses_counter
+                )
             finally:
                 event_queue.task_done()
     finally:
@@ -107,9 +114,7 @@ def kafka_consumer(event_queue: queue.Queue, event_queue_size_gauge: Gauge):
             account_id = record["account_id"]
             customer_id = record["customer_id"]
 
-            event_queue.put({
-                "account_id": account_id, "customer_id": customer_id
-            })
+            event_queue.put({"account_id": account_id, "customer_id": customer_id})
 
             event_queue_size_gauge.set(event_queue.qsize())
     finally:
@@ -117,32 +122,42 @@ def kafka_consumer(event_queue: queue.Queue, event_queue_size_gauge: Gauge):
         logger.info("kafka consumer stopped")
 
 
-def get_payment_features(account_id: str, http_client: httpx.Client, feature_store_responses_counter: Counter):
-        response = http_client.post(
-            f"{FEATURE_STORE_URL}/features/payment_6h",
-            headers={
-                "Content-Type": "application/json",
-            },
-            json={"entity_keys": {"account_id": account_id}},
-        )
-        feature_store_responses_counter.labels(feature="payment_6h", http_status_code=response.status_code).inc()
-        logger.info(
-            f"[payment_6h] {response.status_code} response for {account_id=}: {response.json()}"
-        )
+def get_payment_features(
+    account_id: str, http_client: httpx.Client, feature_store_responses_counter: Counter
+):
+    response = http_client.post(
+        f"{FEATURE_STORE_URL}/features/payment_6h",
+        headers={
+            "Content-Type": "application/json",
+        },
+        json={"entity_keys": {"account_id": account_id}},
+    )
+    feature_store_responses_counter.labels(
+        feature="payment_6h", http_status_code=response.status_code
+    ).inc()
+    logger.info(
+        f"[payment_6h] {response.status_code} response for {account_id=}: {response.json()}"
+    )
 
 
-def get_customer_payment_features(customer_id: str, http_client: httpx.Client, feature_store_responses_counter: Counter):
-        response = http_client.post(
-            f"{FEATURE_STORE_URL}/features/customer_payment_6h",
-            headers={
-                "Content-Type": "application/json",
-            },
-            json={"entity_keys": {"customer_id": customer_id}},
-        )
-        feature_store_responses_counter.labels(feature="customer_payment_6h", http_status_code=response.status_code).inc()
-        logger.info(
-            f"[customer_payment_6h] {response.status_code} response for {customer_id=}: {response.json()}"
-        )
+def get_customer_payment_features(
+    customer_id: str,
+    http_client: httpx.Client,
+    feature_store_responses_counter: Counter,
+):
+    response = http_client.post(
+        f"{FEATURE_STORE_URL}/features/customer_payment_6h",
+        headers={
+            "Content-Type": "application/json",
+        },
+        json={"entity_keys": {"customer_id": customer_id}},
+    )
+    feature_store_responses_counter.labels(
+        feature="customer_payment_6h", http_status_code=response.status_code
+    ).inc()
+    logger.info(
+        f"[customer_payment_6h] {response.status_code} response for {customer_id=}: {response.json()}"
+    )
 
 
 def shutdown(signum, frame):
