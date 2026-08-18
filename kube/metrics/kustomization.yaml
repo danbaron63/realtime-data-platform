@@ -14,5 +14,6 @@ configMapGenerator:
     files:
       - dashboards/feature-store.json
     options:
+      disableNameSuffixHash: true
       labels:
         grafana_dashboard: "1"
