@@ -4,22 +4,20 @@
   "metadata": {
     "name": "adfgj4k",
     "namespace": "default",
-    "uid": "25f19715-380f-49a0-9153-be02c970f38e",
-    "resourceVersion": "1787029318076983",
-    "generation": 208,
-    "creationTimestamp": "2026-08-17T10:11:18Z",
+    "uid": "841f304b-4b03-46c5-b498-cba5e4ba0ee8",
+    "resourceVersion": "1787060258011999",
+    "generation": 1,
+    "creationTimestamp": "2026-08-18T13:37:38Z",
     "labels": {
-      "grafana.app/deprecatedInternalID": "4127359229059072"
+      "grafana.app/deprecatedInternalID": "38071771967488"
     },
     "annotations": {
       "grafana.app/createdBy": "access-policy:service",
       "grafana.app/managedBy": "classic-file-provisioning",
       "grafana.app/managerId": "sidecarProvider",
-      "grafana.app/sourceChecksum": "694b99e7c85b33d43fd6f2bf70c0bbfe",
+      "grafana.app/sourceChecksum": "90e0d876336fff906e2abcae37b6d209",
       "grafana.app/sourcePath": "/tmp/dashboards/feature-store.json",
-      "grafana.app/sourceTimestamp": "1787029317000",
-      "grafana.app/updatedBy": "access-policy:service",
-      "grafana.app/updatedTimestamp": "2026-08-18T05:01:58Z",
+      "grafana.app/sourceTimestamp": "1787060256000",
       "grafana.app/folder": ""
     }
   },
@@ -658,6 +656,415 @@
           }
         }
       },
+      "panel-15": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "histogram_quantile(\n  0.9,\n  sum(rate(feature_store_freshness_ms_bucket[15m])) by (le)\n)",
+                        "legendFormat": "__auto",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 15,
+          "links": [],
+          "title": "P90 (ms)",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "fixedColor": "#ad46ff",
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "#EAB839",
+                        "value": 200
+                      },
+                      {
+                        "color": "orange",
+                        "value": 300
+                      },
+                      {
+                        "color": "red",
+                        "value": 500
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.1.2"
+          }
+        }
+      },
+      "panel-16": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "histogram_quantile(\n  0.99,\n  sum(rate(feature_store_freshness_ms_bucket[15m])) by (le)\n)",
+                        "legendFormat": "__auto",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 16,
+          "links": [],
+          "title": "P99 (ms)",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "fixedColor": "#ad46ff",
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "#EAB839",
+                        "value": 200
+                      },
+                      {
+                        "color": "orange",
+                        "value": 300
+                      },
+                      {
+                        "color": "red",
+                        "value": 500
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.1.2"
+          }
+        }
+      },
+      "panel-17": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "histogram_quantile(\n  0.75,\n  sum(rate(feature_store_freshness_ms_bucket[15m])) by (le)\n)",
+                        "legendFormat": "__auto",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 17,
+          "links": [],
+          "title": "P75 (ms)",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "fixedColor": "#ad46ff",
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "#EAB839",
+                        "value": 200
+                      },
+                      {
+                        "color": "orange",
+                        "value": 300
+                      },
+                      {
+                        "color": "red",
+                        "value": 500
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.1.2"
+          }
+        }
+      },
+      "panel-18": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "histogram_quantile(\n  0.5,\n  sum(rate(feature_store_freshness_ms_bucket[15m])) by (le)\n)",
+                        "legendFormat": "__auto",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 18,
+          "links": [],
+          "title": "P50 (ms)",
+          "vizConfig": {
+            "group": "stat",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "fixedColor": "#ad46ff",
+                    "mode": "thresholds"
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "#EAB839",
+                        "value": 200
+                      },
+                      {
+                        "color": "orange",
+                        "value": 300
+                      },
+                      {
+                        "color": "red",
+                        "value": 500
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              }
+            },
+            "version": "13.1.2"
+          }
+        }
+      },
+      "panel-19": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 19,
+          "links": [],
+          "title": "",
+          "vizConfig": {
+            "group": "text",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+              },
+              "options": {
+                "code": {
+                  "language": "plaintext",
+                  "showLineNumbers": false,
+                  "showMiniMap": false
+                },
+                "content": "# Feature Store\n",
+                "mode": "markdown"
+              }
+            },
+            "version": "13.1.2"
+          }
+        }
+      },
       "panel-2": {
         "kind": "Panel",
         "spec": {
@@ -1233,7 +1640,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "histogram_quantile(\n  0.95,\n  rate(feature_store_freshness_ms_bucket[15m])\n)",
+                        "expr": "histogram_quantile(\n  0.95,\n  sum(rate(feature_store_freshness_ms_bucket[15m])) by (le)\n)",
                         "legendFormat": "P95",
                         "range": true
                       },
@@ -1254,7 +1661,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "histogram_quantile(\n  0.99,\n  rate(feature_store_freshness_ms_bucket[15m])\n)",
+                        "expr": "histogram_quantile(\n  0.99,\n  sum(rate(feature_store_freshness_ms_bucket[15m])) by (le)\n)",
                         "instant": false,
                         "legendFormat": "P99",
                         "range": true
@@ -1276,7 +1683,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "histogram_quantile(\n  0.9,\n  rate(feature_store_freshness_ms_bucket[15m])\n)",
+                        "expr": "histogram_quantile(\n  0.9,\n  sum(rate(feature_store_freshness_ms_bucket[15m])) by (le)\n)",
                         "instant": false,
                         "legendFormat": "P90",
                         "range": true
@@ -1298,7 +1705,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "histogram_quantile(\n  0.75,\n  rate(feature_store_freshness_ms_bucket[15m])\n)",
+                        "expr": "histogram_quantile(\n  0.75,\n  sum(rate(feature_store_freshness_ms_bucket[15m])) by (le)\n)",
                         "instant": false,
                         "legendFormat": "P75",
                         "range": true
@@ -1320,7 +1727,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "histogram_quantile(\n  0.5,\n  rate(feature_store_freshness_ms_bucket[15m])\n)",
+                        "expr": "histogram_quantile(\n  0.5,\n  sum(rate(feature_store_freshness_ms_bucket[15m])) by (le)\n)",
                         "instant": false,
                         "legendFormat": "P50",
                         "range": true
@@ -1432,12 +1839,25 @@
             "spec": {
               "element": {
                 "kind": "ElementReference",
+                "name": "panel-19"
+              },
+              "height": 2,
+              "width": 24,
+              "x": 0,
+              "y": 0
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
                 "name": "panel-1"
               },
               "height": 8,
               "width": 12,
               "x": 0,
-              "y": 0
+              "y": 2
             }
           },
           {
@@ -1450,7 +1870,7 @@
               "height": 8,
               "width": 12,
               "x": 12,
-              "y": 0
+              "y": 2
             }
           },
           {
@@ -1463,7 +1883,7 @@
               "height": 8,
               "width": 7,
               "x": 0,
-              "y": 8
+              "y": 10
             }
           },
           {
@@ -1476,7 +1896,7 @@
               "height": 8,
               "width": 5,
               "x": 7,
-              "y": 8
+              "y": 10
             }
           },
           {
@@ -1489,7 +1909,7 @@
               "height": 4,
               "width": 6,
               "x": 12,
-              "y": 8
+              "y": 10
             }
           },
           {
@@ -1502,7 +1922,7 @@
               "height": 4,
               "width": 6,
               "x": 18,
-              "y": 8
+              "y": 10
             }
           },
           {
@@ -1515,7 +1935,7 @@
               "height": 4,
               "width": 6,
               "x": 12,
-              "y": 12
+              "y": 14
             }
           },
           {
@@ -1528,7 +1948,7 @@
               "height": 4,
               "width": 6,
               "x": 18,
-              "y": 12
+              "y": 14
             }
           },
           {
@@ -1541,7 +1961,7 @@
               "height": 2,
               "width": 24,
               "x": 0,
-              "y": 16
+              "y": 18
             }
           },
           {
@@ -1554,7 +1974,59 @@
               "height": 8,
               "width": 12,
               "x": 0,
-              "y": 18
+              "y": 20
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-16"
+              },
+              "height": 4,
+              "width": 6,
+              "x": 12,
+              "y": 20
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-15"
+              },
+              "height": 4,
+              "width": 6,
+              "x": 18,
+              "y": 20
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-17"
+              },
+              "height": 4,
+              "width": 6,
+              "x": 12,
+              "y": 24
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-18"
+              },
+              "height": 4,
+              "width": 6,
+              "x": 18,
+              "y": 24
             }
           },
           {
@@ -1567,7 +2039,7 @@
               "height": 2,
               "width": 24,
               "x": 0,
-              "y": 26
+              "y": 28
             }
           },
           {
@@ -1580,7 +2052,7 @@
               "height": 8,
               "width": 12,
               "x": 0,
-              "y": 28
+              "y": 30
             }
           },
           {
@@ -1593,7 +2065,7 @@
               "height": 8,
               "width": 12,
               "x": 12,
-              "y": 28
+              "y": 30
             }
           }
         ]
