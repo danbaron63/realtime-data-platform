@@ -83,6 +83,12 @@ def freshness_check(
         time_taken_upper_bound_ns = response_ns - event_creation_ns
         time_taken_lower_bound_ns = last_request_ns - event_creation_ns
 
+        try:
+            response.raise_for_status()
+        except Exception as e:
+            logger.error(f"Error response from feature store ({response.status_code}): {e}")
+            continue
+
         features = response.json()
         tx_count = features["tx_count"]
         if tx_count != 0:
