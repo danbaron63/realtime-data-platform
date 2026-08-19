@@ -1,10 +1,12 @@
-from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql.streaming import StreamingQuery
-from pyspark.sql.functions import col, expr
-from pyspark.sql.avro.functions import from_avro
-import requests
 import argparse
 import os
+import time
+
+import requests
+from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql.avro.functions import from_avro
+from pyspark.sql.functions import col, expr
+from pyspark.sql.streaming import StreamingQuery
 
 
 def get_latest_schema_from_registry(registry_url: str, topic_name: str) -> str:
@@ -83,6 +85,32 @@ def process_stream(topic: str) -> StreamingQuery:
     return query
 
 
+def wait_for_dependencies(urls: list[str]):
+    backoff = 1.0
+    timeout = 600
+    timeout_time = time.time() + timeout
+
+    while True:
+        if time.time() > timeout_time:
+            raise RuntimeError(f"Timed out waiting for dependencies: {urls}")
+
+        successful = 0
+        for url in urls:
+            try:
+                response = requests.get(url)
+                response.raise_for_status()
+                successful += 1
+                logger.warn(f"Successful response from {url}")
+            except requests.HTTPError as err:
+                logger.error(f"Error response from {url}: {err}")
+
+        if len(urls) == successful:
+            return
+
+        logger.warn(f"Backing off for {backoff} seconds, waiting for 200 responses from {urls}")
+        time.sleep(backoff)
+        backoff *= 1.2
+
 def main(topics: list[str]):
     logger.warn("Creating namespace raw")
     spark.sql("CREATE NAMESPACE IF NOT EXISTS polaris.raw")
@@ -96,6 +124,7 @@ def main(topics: list[str]):
 if __name__ == "__main__":
     REDPANDA_BROKERS = os.environ["REDPANDA_BROKERS"]
     SCHEMA_REGISTRY_URL = os.environ["SCHEMA_REGISTRY_URL"]
+    POLARIS_ADMIN_URL = os.environ["POLARIS_ADMIN_URL"]
     POLARIS_CREDENTIAL = os.environ["POLARIS_CREDENTIAL"]
     parser = argparse.ArgumentParser()
     parser.add_argument("topics", nargs="+", help="List of topics to consume")
@@ -106,4 +135,8 @@ if __name__ == "__main__":
         .getOrCreate()
     )
     logger = spark._jvm.org.apache.logging.log4j.LogManager.getLogger("python")
+    wait_for_dependencies([
+        f"{SCHEMA_REGISTRY_URL}/subjects",
+        f"{POLARIS_ADMIN_URL}/q/health",
+    ])
     main(args.topics)
