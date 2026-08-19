@@ -22,7 +22,7 @@ spec:
                   subPath: profiles.yml
           restartPolicy: OnFailure
           initContainers:
-            - name: wait-for-polaris
+            - name: wait-for-trino
               image: curlimages/curl:8.16.0
               resources:
                 requests:
