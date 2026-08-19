@@ -5,8 +5,8 @@
     "name": "adfgj4k",
     "namespace": "default",
     "uid": "841f304b-4b03-46c5-b498-cba5e4ba0ee8",
-    "resourceVersion": "1787060258011999",
-    "generation": 1,
+    "resourceVersion": "1787061075030018",
+    "generation": 2,
     "creationTimestamp": "2026-08-18T13:37:38Z",
     "labels": {
       "grafana.app/deprecatedInternalID": "38071771967488"
@@ -15,9 +15,11 @@
       "grafana.app/createdBy": "access-policy:service",
       "grafana.app/managedBy": "classic-file-provisioning",
       "grafana.app/managerId": "sidecarProvider",
-      "grafana.app/sourceChecksum": "90e0d876336fff906e2abcae37b6d209",
+      "grafana.app/sourceChecksum": "fa949751f2dac82535c7353c077c6ed7",
       "grafana.app/sourcePath": "/tmp/dashboards/feature-store.json",
-      "grafana.app/sourceTimestamp": "1787060256000",
+      "grafana.app/sourceTimestamp": "1787061074000",
+      "grafana.app/updatedBy": "access-policy:service",
+      "grafana.app/updatedTimestamp": "2026-08-18T13:51:15Z",
       "grafana.app/folder": ""
     }
   },
@@ -1185,6 +1187,192 @@
           }
         }
       },
+      "panel-20": {
+        "kind": "Panel",
+        "spec": {
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "histogram_quantile(\n  0.99,\n  sum(rate(pinot_time_used_ms_bucket[5m])) by (le)\n)",
+                        "legendFormat": "P99",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "A"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "histogram_quantile(\n  0.90,\n  sum(rate(pinot_time_used_ms_bucket[5m])) by (le)\n)",
+                        "instant": false,
+                        "legendFormat": "P90",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "B"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "histogram_quantile(\n  0.75,\n  sum(rate(pinot_time_used_ms_bucket[5m])) by (le)\n)",
+                        "instant": false,
+                        "legendFormat": "P75",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "C"
+                  }
+                },
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "hidden": false,
+                    "query": {
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "group": "prometheus",
+                      "kind": "DataQuery",
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "histogram_quantile(\n  0.5,\n  sum(rate(pinot_time_used_ms_bucket[5m])) by (le)\n)",
+                        "instant": false,
+                        "legendFormat": "P50",
+                        "range": true
+                      },
+                      "version": "v0"
+                    },
+                    "refId": "D"
+                  }
+                }
+              ],
+              "queryOptions": {},
+              "transformations": []
+            }
+          },
+          "description": "",
+          "id": 20,
+          "links": [],
+          "title": "Pinot Time Used (ms)",
+          "vizConfig": {
+            "group": "timeseries",
+            "kind": "VizConfig",
+            "spec": {
+              "fieldConfig": {
+                "defaults": {
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 0,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "color": "green",
+                        "value": 0
+                      },
+                      {
+                        "color": "red",
+                        "value": 80
+                      }
+                    ]
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "enableFacetedFilter": false,
+                  "overflow": "ellipsis",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              }
+            },
+            "version": "13.1.2"
+          }
+        }
+      },
       "panel-4": {
         "kind": "Panel",
         "spec": {
@@ -1956,12 +2144,25 @@
             "spec": {
               "element": {
                 "kind": "ElementReference",
+                "name": "panel-20"
+              },
+              "height": 7,
+              "width": 24,
+              "x": 0,
+              "y": 18
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
                 "name": "panel-11"
               },
               "height": 2,
               "width": 24,
               "x": 0,
-              "y": 18
+              "y": 25
             }
           },
           {
@@ -1974,7 +2175,7 @@
               "height": 8,
               "width": 12,
               "x": 0,
-              "y": 20
+              "y": 27
             }
           },
           {
@@ -1987,7 +2188,7 @@
               "height": 4,
               "width": 6,
               "x": 12,
-              "y": 20
+              "y": 27
             }
           },
           {
@@ -2000,7 +2201,7 @@
               "height": 4,
               "width": 6,
               "x": 18,
-              "y": 20
+              "y": 27
             }
           },
           {
@@ -2013,7 +2214,7 @@
               "height": 4,
               "width": 6,
               "x": 12,
-              "y": 24
+              "y": 31
             }
           },
           {
@@ -2026,7 +2227,7 @@
               "height": 4,
               "width": 6,
               "x": 18,
-              "y": 24
+              "y": 31
             }
           },
           {
@@ -2039,7 +2240,7 @@
               "height": 2,
               "width": 24,
               "x": 0,
-              "y": 28
+              "y": 35
             }
           },
           {
@@ -2052,7 +2253,7 @@
               "height": 8,
               "width": 12,
               "x": 0,
-              "y": 30
+              "y": 37
             }
           },
           {
@@ -2065,7 +2266,7 @@
               "height": 8,
               "width": 12,
               "x": 12,
-              "y": 30
+              "y": 37
             }
           }
         ]

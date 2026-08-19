@@ -1,9 +1,16 @@
 import logging
 
+import typing
+
 import httpx
 from pydantic import JsonValue
 
 logger = logging.getLogger(__name__)
+
+
+class PinotResponse(typing.NamedTuple):
+    rows: list[dict[str, typing.Any]]
+    metrics: dict[str, typing.Any]
 
 
 class PinotQueryError(Exception):
@@ -26,7 +33,7 @@ class PinotClient:
         sql: str,
         multi_stage: bool,
         parameters: dict[str, JsonValue] | None = None,
-    ):
+    ) -> PinotResponse:
         formatted_query = sql.format(**parameters)
         endpoint = "/query" if multi_stage else "/query/sql"
 
@@ -48,4 +55,10 @@ class PinotClient:
         columns = result["dataSchema"]["columnNames"]
         rows = result["rows"]
 
-        return [dict(zip(columns, row)) for row in rows]
+        records = [dict(zip(columns, row)) for row in rows]
+        return PinotResponse(
+            rows=records,
+            metrics={
+                "timeUsedMs": payload["timeUsedMs"],
+            }
+        )
