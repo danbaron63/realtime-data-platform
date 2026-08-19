@@ -166,10 +166,7 @@ def main():
     )
 
     while running:
-        current_second = datetime.datetime.now(datetime.UTC).second
-        wait_seconds = 60 - current_second
-        time.sleep(wait_seconds)
-
+        time.sleep(10.0)
         freshness_check(avro_serializer, topic, producer, freshness_histogram)
 
 
