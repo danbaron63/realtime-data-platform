@@ -5,8 +5,8 @@
     "name": "adfgj4k",
     "namespace": "default",
     "uid": "841f304b-4b03-46c5-b498-cba5e4ba0ee8",
-    "resourceVersion": "1787061075030018",
-    "generation": 2,
+    "resourceVersion": "1787136733077018",
+    "generation": 3,
     "creationTimestamp": "2026-08-18T13:37:38Z",
     "labels": {
       "grafana.app/deprecatedInternalID": "38071771967488"
@@ -15,11 +15,11 @@
       "grafana.app/createdBy": "access-policy:service",
       "grafana.app/managedBy": "classic-file-provisioning",
       "grafana.app/managerId": "sidecarProvider",
-      "grafana.app/sourceChecksum": "fa949751f2dac82535c7353c077c6ed7",
+      "grafana.app/sourceChecksum": "ce9e3a1c24aaf71f9740d802ca7e1d0f",
       "grafana.app/sourcePath": "/tmp/dashboards/feature-store.json",
-      "grafana.app/sourceTimestamp": "1787061074000",
+      "grafana.app/sourceTimestamp": "1787136732000",
       "grafana.app/updatedBy": "access-policy:service",
-      "grafana.app/updatedTimestamp": "2026-08-18T13:51:15Z",
+      "grafana.app/updatedTimestamp": "2026-08-19T10:52:13Z",
       "grafana.app/folder": ""
     }
   },
@@ -1744,7 +1744,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "http_requests_total{handler!=\"/features/{feature}\"}",
+                        "expr": "sum(http_requests_total{handler!=\"/features/{feature}\"}) by (handler, status)",
                         "legendFormat": "{{label_name}}",
                         "range": true
                       },
@@ -1788,8 +1788,8 @@
                 "overrides": []
               },
               "options": {
-                "colorMode": "background",
-                "graphMode": "area",
+                "colorMode": "value",
+                "graphMode": "none",
                 "justifyMode": "auto",
                 "orientation": "auto",
                 "percentChangeColorMode": "standard",
