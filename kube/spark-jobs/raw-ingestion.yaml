@@ -65,6 +65,8 @@ spec:
                 value: "redpanda-0.redpanda.default.svc.cluster.local:9093"
               - name: "SCHEMA_REGISTRY_URL"
                 value: "http://redpanda-0.redpanda.default.svc.cluster.local:8081"
+              - name: "POLARIS_ADMIN_URL"
+                value: "http://polaris.default.svc.cluster.local:8182"
               - name: "AWS_REGION"
                 value: "us-east-1"
               - name: "POLARIS_CREDENTIAL"
