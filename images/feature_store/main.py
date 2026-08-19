@@ -71,6 +71,7 @@ async def get_features(feature: str, item: Entity):
         sql, use_multi_stage, parameters=item.entity_keys
     )
     if len(rows) > 1:
+        logger.error(f"returning HTTP 500: {feature} with entity keys: {item.entity_keys} returned {len(rows)}: {rows}")
         raise HTTPException(
             status_code=500,
             detail=(
@@ -78,6 +79,7 @@ async def get_features(feature: str, item: Entity):
             ),
         )
     if len(rows) == 0:
+        logger.error(f"returning HTTP 404: {feature} with entity keys: {item.entity_keys} returned 0 records")
         raise HTTPException(
             status_code=404, detail=f"Feature '{feature}' returned no rows"
         )
