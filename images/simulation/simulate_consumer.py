@@ -14,6 +14,7 @@ from prometheus_client import Counter, Gauge, start_http_server
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 stop_event = threading.Event()
 
 
@@ -135,9 +136,12 @@ def get_payment_features(
     feature_store_responses_counter.labels(
         feature="payment_6h", http_status_code=response.status_code
     ).inc()
-    logger.info(
-        f"[payment_6h] {response.status_code} response for {account_id=}: {response.json()}"
-    )
+    try:
+        response.raise_for_status()
+    except httpx.HTTPError:
+        logger.error(
+            f"[payment_6h] {response.status_code} response for {account_id=}: {response.json()}"
+        )
 
 
 def get_customer_payment_features(
@@ -155,9 +159,12 @@ def get_customer_payment_features(
     feature_store_responses_counter.labels(
         feature="customer_payment_6h", http_status_code=response.status_code
     ).inc()
-    logger.info(
-        f"[customer_payment_6h] {response.status_code} response for {customer_id=}: {response.json()}"
-    )
+    try:
+        response.raise_for_status()
+    except httpx.HTTPError:
+        logger.error(
+            f"[customer_payment_6h] {response.status_code} response for {customer_id=}: {response.json()}"
+        )
 
 
 def shutdown(signum, frame):

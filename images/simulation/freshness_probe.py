@@ -68,10 +68,10 @@ def freshness_check(
     kafka_acked_ns = kafka_acked_time_ns - event_creation_ns
 
     last_request_ns = kafka_acked_time_ns
-    requests = 0
+    request_count = 0
 
     while True:
-        requests += 1
+        request_count += 1
 
         try:
             response = http_client.post(
@@ -84,12 +84,12 @@ def freshness_check(
             response.raise_for_status()
         except httpx.HTTPError as e:
             logger.error(
-                f"Error response from feature store ({response.status_code}): {e}"
+                f"request {request_count} - error response from feature store ({response.status_code}): {e}"
             )
             continue
         except httpx.TimeoutException as e:
             logger.error(
-                f"Timeout waiting for feature store: {e}"
+                f"request {request_count} - timeout waiting for feature store: {e}"
             )
             continue
         finally:
@@ -102,7 +102,7 @@ def freshness_check(
         if tx_count != 0:
             logger.info(
                 "request %.0f - event serialised: %.2f ms; kafka acked: %.2f ms; time taken upper bound: %.2f ms; time taken lower bound: %.2f ms. event: %s",
-                requests,
+                request_count,
                 event_serialisation_ns / 1000_000,
                 kafka_acked_ns / 1000_000,
                 time_taken_upper_bound_ns / 1000_000,
