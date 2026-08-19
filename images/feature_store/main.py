@@ -7,6 +7,7 @@ from itertools import chain
 from anyio import open_file
 from fastapi import FastAPI, HTTPException
 from pinot import PinotClient
+from prometheus_client import Histogram
 from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel, JsonValue
 from yaml import safe_load
@@ -20,6 +21,32 @@ async def lifespan(app: FastAPI):
     app.state.feature_config = Config(**config)
     app.state.pinot = PinotClient(
         base_url=os.environ["PINOT_BROKER"],
+    )
+    app.state.pinot_time_used_histogram = Histogram(
+        "pinot_time_used_ms",
+        "Time used by pinot to generate response",
+        labelnames=["feature"],
+        buckets=(
+            1,
+            2,
+            3,
+            5,
+            8,
+            12,
+            16,
+            20,
+            25,
+            30,
+            40,
+            50,
+            70,
+            90,
+            120,
+            150,
+            200,
+            250,
+            300,
+        ),
     )
 
     yield
@@ -67,9 +94,10 @@ async def get_features(feature: str, item: Entity):
     sql = conf.sql
     use_multi_stage = conf.multi_stage_engine
 
-    rows = await app.state.pinot.query(
+    pinot_response = await app.state.pinot.query(
         sql, use_multi_stage, parameters=item.entity_keys
     )
+    rows = pinot_response.rows
     if len(rows) > 1:
         logger.error(f"returning HTTP 500: {feature} with entity keys: {item.entity_keys} returned {len(rows)}: {rows}")
         raise HTTPException(
@@ -84,6 +112,7 @@ async def get_features(feature: str, item: Entity):
             status_code=404, detail=f"Feature '{feature}' returned no rows"
         )
 
+    app.state.pinot_time_used_histogram.labels(feature=feature).observe(pinot_response.metrics["timeUsedMs"])
     return rows[0]
 
 

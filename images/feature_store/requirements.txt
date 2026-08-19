@@ -1,5 +1,6 @@
 fastapi==0.139.0
 uvicorn==0.51.0
 PyYAML==6.0.3
+prometheus-client==0.26.0
 prometheus-fastapi-instrumentator==8.1.0
 httpx==0.28.1
