@@ -75,6 +75,26 @@ spec:
                     name: polaris-spark-credentials
                     key: credential
 #            imagePullPolicy: "never"
+        initContainers:
+          - name: wait-for-polaris
+            image: curlimages/curl:8.16.0
+            resources:
+              requests:
+                cpu: 1m
+                memory: 8Mi
+              limits:
+                cpu: 10m
+                memory: 16Mi
+            env:
+              - name: HEALTH_URL
+                value: http://polaris:8182/q/health
+            command:
+              - sh
+              - -c
+              - |
+                until curl -fsS "$HEALTH_URL"; do
+                  sleep 5
+                done
   executorSpec:
     podTemplateSpec:
       spec:
@@ -83,6 +103,3 @@ spec:
             env:
               - name: "AWS_REGION"
                 value: "us-east-1"
-#        containers:
-#          - name: "driver"
-#            imagePullPolicy: "never"
