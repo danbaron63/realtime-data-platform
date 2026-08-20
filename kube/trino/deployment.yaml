@@ -14,6 +14,25 @@ spec:
         app: trino
     spec:
       initContainers:
+        - name: wait-for-polaris
+          image: curlimages/curl:8.16.0
+          resources:
+            requests:
+              cpu: 1m
+              memory: 8Mi
+            limits:
+              cpu: 10m
+              memory: 16Mi
+          env:
+            - name: HEALTH_URL
+              value: http://polaris:8182/q/health
+          command:
+            - sh
+            - -c
+            - |
+              until curl -fsS "$HEALTH_URL"; do
+                sleep 5
+              done
         - name: render-polaris-config
           image: alpine:3.22
           command:
