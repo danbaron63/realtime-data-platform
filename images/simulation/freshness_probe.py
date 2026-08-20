@@ -82,14 +82,14 @@ def freshness_check(
                 json={"entity_keys": {"account_id": trace_account_id}},
             )
             response.raise_for_status()
-        except httpx.HTTPError as e:
-            logger.error(
-                f"request {request_count} - error response from feature store ({response.status_code}): {e}"
-            )
-            continue
         except httpx.TimeoutException as e:
             logger.error(
                 f"request {request_count} - timeout waiting for feature store: {e}"
+            )
+            continue
+        except httpx.HTTPError as e:
+            logger.error(
+                f"request {request_count} - error response from feature store ({response.status_code}): {e}"
             )
             continue
         finally:

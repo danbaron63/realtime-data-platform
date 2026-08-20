@@ -1,5 +1,4 @@
 import logging
-
 import typing
 
 import httpx
@@ -13,7 +12,15 @@ class PinotResponse(typing.NamedTuple):
     metrics: dict[str, typing.Any]
 
 
-class PinotQueryError(Exception):
+class PinotException(Exception):
+    pass
+
+
+class PinotQueryError(PinotException):
+    pass
+
+
+class PinotConnectionError(PinotException):
     pass
 
 
@@ -37,14 +44,18 @@ class PinotClient:
         formatted_query = sql.format(**parameters)
         endpoint = "/query" if multi_stage else "/query/sql"
 
-        response = await self._client.post(
-            endpoint,
-            json={
-                "sql": formatted_query,
-            },
-        )
-
-        response.raise_for_status()
+        try:
+            response = await self._client.post(
+                endpoint,
+                json={
+                    "sql": formatted_query,
+                },
+            )
+            response.raise_for_status()
+        except httpx.TimeoutException as te:
+            raise PinotConnectionError("Pinot connection timed out") from te
+        except httpx.ConnectError as ce:
+            raise PinotConnectionError("Pinot unavailable") from ce
 
         payload = response.json()
 

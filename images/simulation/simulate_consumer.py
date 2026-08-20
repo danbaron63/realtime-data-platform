@@ -58,7 +58,7 @@ def main():
 def worker(
     worker_id: int, event_queue: queue.Queue, feature_store_responses_counter: Counter
 ):
-    http_client = httpx.Client(timeout=5)
+    http_client = httpx.Client(timeout=10)
 
     try:
         while not stop_event.is_set():
@@ -78,6 +78,8 @@ def worker(
                 get_customer_payment_features(
                     customer_id, http_client, feature_store_responses_counter
                 )
+            except Exception:
+                logger.exception("exception caught whilst fetching features")
             finally:
                 event_queue.task_done()
     finally:
@@ -140,7 +142,7 @@ def get_payment_features(
         response.raise_for_status()
     except httpx.HTTPError:
         logger.error(
-            f"[payment_6h] {response.status_code} response for {account_id=}: {response.json()}"
+            f"[payment_6h] {response.status_code} response for {account_id=}: {response.text}"
         )
 
 
@@ -163,7 +165,7 @@ def get_customer_payment_features(
         response.raise_for_status()
     except httpx.HTTPError:
         logger.error(
-            f"[customer_payment_6h] {response.status_code} response for {customer_id=}: {response.json()}"
+            f"[customer_payment_6h] {response.status_code} response for {customer_id=}: {response.text}"
         )
 
 

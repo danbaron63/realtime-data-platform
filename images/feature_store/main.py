@@ -6,7 +6,7 @@ from itertools import chain
 
 from anyio import open_file
 from fastapi import FastAPI, HTTPException
-from pinot import PinotClient
+from pinot import PinotClient, PinotConnectionError
 from prometheus_client import Histogram
 from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel, JsonValue
@@ -94,9 +94,17 @@ async def get_features(feature: str, item: Entity):
     sql = conf.sql
     use_multi_stage = conf.multi_stage_engine
 
-    pinot_response = await app.state.pinot.query(
-        sql, use_multi_stage, parameters=item.entity_keys
-    )
+    try:
+        pinot_response = await app.state.pinot.query(
+            sql, use_multi_stage, parameters=item.entity_keys
+        )
+    except PinotConnectionError as e:
+        logger.error(f"returning HTTP 500: {e!s}")
+        raise HTTPException(
+            status_code=500,
+            detail=str(e),
+        )
+
     rows = pinot_response.rows
     if len(rows) > 1:
         logger.error(f"returning HTTP 500: {feature} with entity keys: {item.entity_keys} returned {len(rows)}: {rows}")
