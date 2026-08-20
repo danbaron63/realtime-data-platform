@@ -23,5 +23,8 @@ console:
       cpu: "200m"
       memory: "128Mi"
 
+post_install_job:
+  enabled: false
+
 tests:
   enabled: false
