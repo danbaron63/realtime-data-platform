@@ -38,6 +38,26 @@ spec:
           volumeMounts:
             - name: generator-data
               mountPath: /mnt/data
+      initContainers:
+        - name: wait-for-schema-registry
+          image: curlimages/curl:8.16.0
+          resources:
+            requests:
+              cpu: 1m
+              memory: 8Mi
+            limits:
+              cpu: 10m
+              memory: 16Mi
+          env:
+            - name: HEALTH_URL
+              value: http://redpanda:8081/subjects
+          command:
+            - sh
+            - -c
+            - |
+              until curl -fsS "$HEALTH_URL" >/dev/null; do
+                sleep 5
+              done
   volumeClaimTemplates:
     - metadata:
         name: generator-data
