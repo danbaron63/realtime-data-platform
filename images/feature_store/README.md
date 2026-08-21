@@ -26,5 +26,4 @@ This allows them to be joined into a single record.
 
 ## Implementation
 
-The server is implemented using FastAPI and leverages `asyncio` for improved performance.
-Interactions with Apache Pinot are handled by `pinotdb` and async methods are used where possible.
+The server is implemented using FastAPI.

@@ -19,7 +19,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: postgres-config
-            - secretRef: # <--- THIS WAS MISSING
+            - secretRef:
                 name: postgres-auth
           env:
             - name: QUARKUS_DATASOURCE_PASSWORD

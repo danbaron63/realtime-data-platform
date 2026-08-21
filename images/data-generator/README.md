@@ -1,12 +1,18 @@
 # Data Generator
 
 This package simulates events in a bank.
+Events are published to Kafka to be consumed by other services.
+Event keys should match up correctly making joins possible.
 
 ## Approach
 
 We continuously generate random events from a predetermined list of events.
 According to the chosen event, random data is generated for that event according to its schema.
 According to the event and its schema, a number of entities may be affected.
+
+In order to ensure that joins are possible, rather than blindly generating random data, we maintain
+state in a sqlite database.
+This makes this service stateful so it is deployed into K8s as a `StatefulSet`.
 
 ## Events
 

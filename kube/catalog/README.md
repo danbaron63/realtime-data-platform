@@ -1,7 +1,17 @@
+# Polaris Catalog
 
-# Commands
+This is the catalog for Iceberg tables.
+Here we provision:
+* The catalog deployment
+* Postgres deployment used by the catalog
+* Polaris bootstrap job - one off job to bootstrap Postgres for Polaris
+* Provision catalog job - job to provision objects in the catalog
 
-## Get auth token
+## Commands
+
+Useful commands.
+
+### Get auth token
 ```
 curl -X POST http://localhost:8181/api/catalog/v1/oauth/tokens \
   -H "X-Iceberg-Access-Realm: POLARIS" \
@@ -13,7 +23,7 @@ curl -X POST http://localhost:8181/api/catalog/v1/oauth/tokens \
 
 Then `export POLARIS_TOKEN=...`.
 
-## Create catalog
+### Create catalog
 ```
 curl -i -X POST http://localhost:8181/api/management/v1/catalogs \
   -H "Authorization: Bearer $POLARIS_TOKEN" \
@@ -49,7 +59,7 @@ curl -i -X GET http://localhost:8181/api/management/v1/catalogs \
   -H "Content-Type: application/json"
 ```
 
-## Create namespace
+### Create namespace
 
 ```
 curl -i -X POST http://localhost:8181/api/catalog/v1/default_catalog/namespaces \
@@ -73,7 +83,7 @@ curl -i -X GET http://localhost:8181/api/catalog/v1/default_catalog/namespaces \
   -H "Content-Type: application/json"  
 ```
 
-## Create table
+### Create table
 
 ```
 curl -i -X POST http://localhost:8181/api/catalog/v1/default_catalog/namespaces/dev_db/tables \
