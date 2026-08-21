@@ -5,6 +5,7 @@ import signal
 import sys
 import time
 import uuid
+from functools import lru_cache
 
 import httpx
 from confluent_kafka import Producer
@@ -24,8 +25,7 @@ running = True
 
 
 def freshness_check(
-    avro_serializer: AvroSerializer,
-    topic: str,
+    schema_registry_client: SchemaRegistryClient,
     producer: Producer,
     freshness_histogram: Histogram,
 ):
@@ -35,9 +35,23 @@ def freshness_check(
     trace_card_id = f"TEST_{uuid.uuid4()!s}"
     trace_merchant_id = f"TEST_{uuid.uuid4()!s}"
 
+
+    customer_created_event = {
+        "id": trace_customer_id,
+        "created_at": datetime.datetime.now(datetime.UTC),
+        "firstname": "TEST",
+        "lastname": "TEST",
+        "date_of_birth": datetime.date(1990, 1, 1),
+        "occupation": "TEST",
+        "address": "123 Fake Street",
+        "gender": "male",
+    }
+    customer_created_topic = "raw.customer_created"
+    publish(customer_created_event, customer_created_topic, producer, schema_registry_client)
+
     event_creation_ns = time.perf_counter_ns()
 
-    event = {
+    payment_authorised_event = {
         "id": trace_id,
         "timestamp": datetime.datetime.now(datetime.UTC),
         "account_id": trace_account_id,
@@ -48,21 +62,8 @@ def freshness_check(
         "currency": CURRENCY,
         "channel": CHANNEL,
     }
-
-    serialised_record = avro_serializer(
-        event,
-        SerializationContext(topic, MessageField.VALUE),
-    )
-
-    event_serialisation_ns = time.perf_counter_ns() - event_creation_ns
-
-    producer.produce(
-        topic=topic,
-        value=serialised_record,
-        key=None,
-        on_delivery=delivery_callback,
-    )
-    producer.flush(1.0)
+    payment_authorised_topic = "raw.payment_authorised"
+    publish(payment_authorised_event, payment_authorised_topic, producer, schema_registry_client)
 
     kafka_acked_time_ns = time.perf_counter_ns()
     kafka_acked_ns = kafka_acked_time_ns - event_creation_ns
@@ -81,15 +82,16 @@ def freshness_check(
                 },
                 json={"entity_keys": {"account_id": trace_account_id}},
             )
-            response.raise_for_status()
+            try:
+                response.raise_for_status()
+            except httpx.HTTPError as e:
+                logger.error(
+                    f"request {request_count} - error response from feature store ({response.status_code}): {e}"
+                )
+                continue
         except httpx.TimeoutException as e:
             logger.error(
                 f"request {request_count} - timeout waiting for feature store: {e}"
-            )
-            continue
-        except httpx.HTTPError as e:
-            logger.error(
-                f"request {request_count} - error response from feature store ({response.status_code}): {e}"
             )
             continue
         finally:
@@ -101,9 +103,8 @@ def freshness_check(
         tx_count = features["tx_count"]
         if tx_count != 0:
             logger.info(
-                "request %.0f - event serialised: %.2f ms; kafka acked: %.2f ms; time taken upper bound: %.2f ms; time taken lower bound: %.2f ms. event: %s",
+                "request %.0f - kafka acked: %.2f ms; time taken upper bound: %.2f ms; time taken lower bound: %.2f ms. event: %s",
                 request_count,
-                event_serialisation_ns / 1000_000,
                 kafka_acked_ns / 1000_000,
                 time_taken_upper_bound_ns / 1000_000,
                 time_taken_lower_bound_ns / 1000_000,
@@ -119,6 +120,31 @@ def freshness_check(
         time.sleep(0.005)
 
 
+@lru_cache()
+def get_avro_serializer(topic: str, schema_registry_client: SchemaRegistryClient):
+    schema = schema_registry_client.get_latest_version(f"{topic}-value")
+    return AvroSerializer(
+        schema_registry_client,
+        schema.schema.schema_str,
+    )
+
+
+def publish(event: dict, topic: str, producer: Producer, schema_registry_client: SchemaRegistryClient):
+    avro_serializer = get_avro_serializer(topic, schema_registry_client)
+    serialised_record = avro_serializer(
+        event,
+        SerializationContext(topic, MessageField.VALUE),
+    )
+
+    producer.produce(
+        topic=topic,
+        value=serialised_record,
+        key=None,
+        on_delivery=delivery_callback,
+    )
+    producer.flush(1.0)
+
+
 def main():
     producer = Producer(
         {
@@ -126,12 +152,6 @@ def main():
         }
     )
     schema_registry_client = SchemaRegistryClient({"url": SCHEMA_REGISTRY_URL})
-    topic = "raw.payment_authorised"
-    schema = schema_registry_client.get_latest_version(f"{topic}-value")
-    avro_serializer = AvroSerializer(
-        schema_registry_client,
-        schema.schema.schema_str,
-    )
 
     start_http_server(8000)
     freshness_histogram = Histogram(
@@ -167,7 +187,7 @@ def main():
 
     while running:
         time.sleep(10.0)
-        freshness_check(avro_serializer, topic, producer, freshness_histogram)
+        freshness_check(schema_registry_client, producer, freshness_histogram)
 
 
 def delivery_callback(err, msg):
