@@ -8,14 +8,10 @@ features:
         SUM(amount) as total_amount,
         COUNT(*) as total_tx
       FROM atm_withdrawal
-      WHERE account_id = '{account_id}'
-        AND customer_id = '{customer_id}'
-        AND card_id = '{card_id}'
+      WHERE card_id = '{card_id}'
         AND "timestamp" >= NOW() - 6 * 60 * 60 * 1000
       GROUP BY account_id, customer_id, card_id
     entities:
-      - account_id
-      - customer_id
       - card_id
   login_attempted_6h:
     sql: |
