@@ -2,6 +2,7 @@
   "type": "record",
   "name": "payment6hInference",
   "namespace": "pinot.staging",
+  "meta-primary-key": ["account_id", "card_id"],
   "fields": [
     {
       "name":  "window_start",

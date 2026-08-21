@@ -1,4 +1,5 @@
 import argparse
+import json
 from confluent_kafka import Producer
 from confluent_kafka.admin import AdminClient, NewTopic
 from confluent_kafka.schema_registry import SchemaRegistryClient
@@ -8,14 +9,14 @@ from datetime import datetime, timezone
 import logging
 import os
 from trino.dbapi import connect
-from typing import Generator
+from typing import Generator, Any
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def extract(query: str) -> Generator[dict[str, object], None, None]:
+def extract(query: str) -> Generator[dict[str, Any], None, None]:
     logger.info(f"extract: {query=}")
     conn = connect(
         host="trino",
@@ -55,12 +56,15 @@ def create_topic(namespace: str, topic: str):
             raise Exception(f"Failed to create topic {namespaced_topic}") from e
 
 
-def process_events(events: Generator[dict[str, object], None, None], namespace: str, topic_name: str):
+def process_events(events: Generator[dict[str, Any], None, None], namespace: str, topic_name: str):
     create_topic(namespace, topic_name)
     full_topic_name = f"{namespace}.{topic_name}"
 
     with open(f"{SCHEMAS_DIR}/{topic_name}.avsc", "r") as f:
         schema = f.read()
+
+    schema_json = json.loads(schema)
+    primary_key_columns = schema_json["meta-primary-key"]
 
     schema_registry_client = SchemaRegistryClient({"url": SCHEMA_REGISTRY_URL})
 
@@ -86,10 +90,11 @@ def process_events(events: Generator[dict[str, object], None, None], namespace: 
                 sanitize_record(event),
                 SerializationContext(full_topic_name, MessageField.VALUE)
             )
+            key = "|".join([event[c] for c in primary_key_columns])
 
             producer.produce(
                 topic=full_topic_name,
-                key=None,
+                key=key,
                 value=serialised_value,
                 on_delivery=delivery_callback,
             )
@@ -100,7 +105,7 @@ def process_events(events: Generator[dict[str, object], None, None], namespace: 
     logger.info("finished writing records to kafka")
 
 
-def sanitize_record(record: dict[str, object]) -> dict[str, object]:
+def sanitize_record(record: dict[str, Any]) -> dict[str, Any]:
     for key, value in record.items():
         if isinstance(value, datetime):
             record[key] = int(value.replace(tzinfo=timezone.utc).timestamp() * 1000)
