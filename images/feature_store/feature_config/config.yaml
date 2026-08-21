@@ -24,11 +24,9 @@ features:
       FROM login_attempted
       WHERE 
           "timestamp" > NOW() - 6 * 60 * 60 * 1000
-          AND customer_id = '{customer_id}'
           AND device_id = '{device_id}'
       GROUP BY customer_id, device_id
     entities:
-      - customer_id
       - device_id
   payment_6h_batch:
     sql: |
