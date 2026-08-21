@@ -131,11 +131,11 @@ async def get_config():
 
 @app.post("/feature-set/{feature_set}")
 async def get_feature_set(feature_set: str, item: Entity):
-    if feature_set not in app.state.feature_config.features:
+    if feature_set not in app.state.feature_config.feature_sets:
         raise HTTPException(status_code=404, detail=f"Feature {feature_set} not found")
     features = app.state.feature_config.feature_sets[feature_set].features
     entities = list(
-        chain.from_iterable([app.state.feature_config[f].entities for f in features])
+        chain.from_iterable([app.state.feature_config.features[f].entities for f in features])
     )
     async with asyncio.TaskGroup() as tg:
         feature_tasks = {f: tg.create_task(get_features(f, item)) for f in features}
