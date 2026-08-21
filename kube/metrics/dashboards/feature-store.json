@@ -5,8 +5,8 @@
     "name": "adfgj4k",
     "namespace": "default",
     "uid": "22757a3a-6536-4f89-9378-9157f7691c5e",
-    "resourceVersion": "1787231777969013",
-    "generation": 2,
+    "resourceVersion": "1787312988163004",
+    "generation": 3,
     "creationTimestamp": "2026-08-20T09:24:46Z",
     "labels": {
       "grafana.app/deprecatedInternalID": "699213220540416"
@@ -15,11 +15,11 @@
       "grafana.app/createdBy": "access-policy:service",
       "grafana.app/managedBy": "classic-file-provisioning",
       "grafana.app/managerId": "sidecarProvider",
-      "grafana.app/sourceChecksum": "f4942e19cf46a81f41cfe09daa6da7c9",
+      "grafana.app/sourceChecksum": "98c5d24e8acc1f53820504507519089c",
       "grafana.app/sourcePath": "/tmp/dashboards/feature-store.json",
-      "grafana.app/sourceTimestamp": "1787231777000",
+      "grafana.app/sourceTimestamp": "1787312988000",
       "grafana.app/updatedBy": "access-policy:service",
-      "grafana.app/updatedTimestamp": "2026-08-20T13:16:17Z",
+      "grafana.app/updatedTimestamp": "2026-08-21T11:49:48Z",
       "grafana.app/folder": ""
     }
   },
@@ -337,7 +337,7 @@
           "description": "",
           "id": 10,
           "links": [],
-          "title": "Requests - features (1m)",
+          "title": "Response Rate - Features (1m)",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
@@ -375,7 +375,7 @@
                   "values": false
                 },
                 "showPercentChange": false,
-                "textMode": "auto",
+                "textMode": "value_and_name",
                 "wideLayout": true
               }
             },
@@ -540,7 +540,7 @@
           "description": "",
           "id": 14,
           "links": [],
-          "title": "Simulation Response Codes (5m)",
+          "title": "Simulation Response Rate (5m)",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
@@ -576,7 +576,7 @@
                   "values": false
                 },
                 "showPercentChange": false,
-                "textMode": "auto",
+                "textMode": "value_and_name",
                 "wideLayout": true
               }
             },
@@ -3534,7 +3534,7 @@
           "description": "",
           "id": 8,
           "links": [],
-          "title": "Requests - other",
+          "title": "Response Rate - other",
           "vizConfig": {
             "group": "stat",
             "kind": "VizConfig",
