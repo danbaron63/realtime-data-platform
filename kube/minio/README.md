@@ -1,6 +1,10 @@
-# Commands
+# MinIO
 
-## Create bucket
+Lakehouse storage layer.
+
+## Commands
+
+### Create bucket
 ```
 env AWS_ACCESS_KEY_ID="minioadmin" \
     AWS_SECRET_ACCESS_KEY="minioadmin" \
