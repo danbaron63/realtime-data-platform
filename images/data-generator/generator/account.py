@@ -6,7 +6,7 @@ from datetime import UTC, date, datetime
 from generator.base import BaseDatabase, BaseEntity
 from generator.customer import CustomerDatabase
 
-max_accounts_per_customer = 10
+MAX_ACCOUNTS_PER_CUSTOMER = 10
 account_types = [
     "current",
     "credit",
@@ -48,7 +48,8 @@ class AccountDatabase(BaseDatabase):
         result = self._persistence.query(self._account_count_query, [customer.id])
         no_of_accounts = result[0][0]
 
-        if no_of_accounts >= max_accounts_per_customer:
+        if no_of_accounts >= MAX_ACCOUNTS_PER_CUSTOMER:
+            # fetch a different one...
             return self.account_opened()
 
         account = Account(

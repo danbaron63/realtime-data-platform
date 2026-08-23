@@ -53,7 +53,7 @@ def main(rate: float):
 
     customer_db = CustomerDatabase()
     account_db = AccountDatabase(customer_db)
-    card_db = CardDatabase(customer_db, account_db)
+    card_db = CardDatabase(account_db)
     device_db = DeviceDatabase(customer_db)
     merchant_db = MerchantDatabase()
     payment_db = PaymentDatabase(account_db, card_db, merchant_db)
