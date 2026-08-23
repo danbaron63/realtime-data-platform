@@ -1,10 +1,11 @@
-from dataclasses import dataclass
-from datetime import date, datetime
-from enum import StrEnum
 import random
-import names
-from generator.base import BaseDatabase, BaseEntity
+from dataclasses import dataclass
+from datetime import UTC, date, datetime
+from enum import StrEnum
 
+import names
+
+from generator.base import BaseDatabase, BaseEntity
 
 occupations = [
     "Software Engineer",
@@ -133,7 +134,7 @@ class CustomerDatabase(BaseDatabase):
     def customer_created(self) -> Customer:
         customer = Customer(
             id=self._get_next_id(),
-            created_at=datetime.now(),
+            created_at=datetime.now(tz=UTC),
             firstname=names.get_first_name(),
             lastname=names.get_last_name(),
             date_of_birth=date.fromordinal(
@@ -148,8 +149,7 @@ class CustomerDatabase(BaseDatabase):
 
     def customer_details_updated(self) -> Customer:
         # select customer
-        idx = random.randint(0, len(self._database) - 1)
-        customer = self._database[idx]
+        customer = self.get_random()
 
         # choose random field to update
         fields = [
@@ -172,5 +172,4 @@ class CustomerDatabase(BaseDatabase):
 
         # update customer list and return customer
         self._update_persistence(customer)
-        self._database[idx] = customer
         return customer

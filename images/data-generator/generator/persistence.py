@@ -1,5 +1,6 @@
 import sqlite3
-from typing import Sequence
+from collections.abc import Sequence
+
 
 class Persistence:
     con = None
@@ -21,8 +22,11 @@ class Persistence:
         Persistence.con.commit()
 
     @classmethod
-    def query(cls, query) -> list[tuple]:
-        res = Persistence.cur.execute(query)
+    def query(cls, query, parameters: Sequence | None = None) -> list[tuple]:
+        res = Persistence.cur.execute(
+            query,
+            parameters if parameters else (),
+        )
         records = res.fetchall()
         return records
 

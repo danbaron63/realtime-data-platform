@@ -6,21 +6,21 @@ import signal
 import struct
 import sys
 import time
+
+import requests
 from confluent_kafka import Producer
 from confluent_kafka.admin import AdminClient, NewTopic
-from confluent_kafka.schema_registry import SchemaRegistryClient, Schema
+from confluent_kafka.schema_registry import Schema, SchemaRegistryClient
 from dataclasses_avroschema import AvroModel
-from generator.customer import CustomerDatabase
 from generator.account import AccountDatabase
+from generator.atm import AtmDatabase
 from generator.card import CardDatabase
+from generator.customer import CustomerDatabase
 from generator.device import DeviceDatabase
 from generator.merchant import MerchantDatabase
 from generator.payment import PaymentDatabase
-from generator.atm import AtmDatabase
-from generator.transfer import TransferDatabase
 from generator.persistence import Persistence
-import requests
-
+from generator.transfer import TransferDatabase
 
 logging.basicConfig(
     level=logging.INFO,
@@ -71,7 +71,7 @@ def main(rate: float):
     process_event(card_db.card_issued(), "card_issued")
     process_event(merchant_db.merchant_onboarded(), "merchant_onboarded")
 
-    metrics = {e: 0 for e in event_list.keys()}
+    metrics = {e: 0 for e in event_list}
     count = 0
 
     while True:
@@ -87,7 +87,7 @@ def main(rate: float):
 
         if count % 100 == 0:
             logger.info(f"Events generated: {metrics}")
-            metrics = {e: 0 for e in metrics.keys()}
+            metrics = {e: 0 for e in metrics}
 
         match event_type:
             case "customer_created":
@@ -117,7 +117,12 @@ def main(rate: float):
             process_event(event, event_type)
 
 
-def wait_for_schema_registry_healthy(timeout: int, pause_seconds: float = 2, backoff_rate: float = 1.1, max_backoff: float = 15):
+def wait_for_schema_registry_healthy(
+    timeout: int,
+    pause_seconds: float = 2,
+    backoff_rate: float = 1.1,
+    max_backoff: float = 15,
+):
     start_time = time.perf_counter()
     while True:
         try:
@@ -125,8 +130,12 @@ def wait_for_schema_registry_healthy(timeout: int, pause_seconds: float = 2, bac
             response.raise_for_status()
         except requests.exceptions.RequestException as re:
             if time.perf_counter() >= start_time + timeout:
-                raise Exception(f"timed out trying to reach schema registry after {timeout} seconds") from re
-            logger.warning(f"Schema registry not available, backing off for {pause_seconds:.1f} seconds")
+                raise TimeoutError(
+                    f"timed out trying to reach schema registry after {timeout} seconds"
+                ) from re
+            logger.warning(
+                f"Schema registry not available, backing off for {pause_seconds:.1f} seconds"
+            )
             time.sleep(pause_seconds)
             pause_seconds *= backoff_rate
             pause_seconds = min(pause_seconds, max_backoff)
@@ -174,7 +183,7 @@ def process_event(event_obj: AvroModel, topic: str):
 
     except Exception as e:
         logger.info(f"Failed to serialize/produce event for topic {full_topic}: {e}")
-        raise e
+        raise
 
 
 def provision_topic_if_missing(topic: str):
@@ -204,7 +213,7 @@ def provision_topic_if_missing(topic: str):
             logger.info(f"Successfully created topic: {topic_name}")
         except Exception as e:
             logger.info(f"Failed to create topic {topic_name}: {e}")
-            raise e
+            raise
 
 
 def handle_shutdown(signum, frame):

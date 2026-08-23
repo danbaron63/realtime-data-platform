@@ -1,7 +1,8 @@
-from dataclasses import dataclass
-from generator.base import BaseDatabase, BaseEntity
-from datetime import datetime
 import random
+from dataclasses import dataclass
+from datetime import UTC, datetime
+
+from generator.base import BaseDatabase, BaseEntity
 
 merchant_categories = [
     "GROCERY",
@@ -37,7 +38,7 @@ class MerchantDatabase(BaseDatabase):
             merchant_name=self._faker.company(),
             merchant_category=random.choice(merchant_categories),
             country=self._faker.country(),
-            created_at=datetime.now(),
+            created_at=datetime.now(tz=UTC),
         )
         self._insert(merchant)
         return merchant
