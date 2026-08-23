@@ -1,9 +1,9 @@
-from dataclasses import dataclass
-from generator.base import BaseDatabase, BaseEntity
-from datetime import datetime
-from typing import Iterable
 import random
+from collections.abc import Iterable
+from dataclasses import dataclass
+from datetime import UTC, datetime
 
+from generator.base import BaseDatabase, BaseEntity
 
 os = [
     "android",
@@ -47,23 +47,21 @@ class DeviceDatabase(BaseDatabase):
         device = Device(
             id=self._get_next_id(),
             customer_id=customer.id,
-            first_seen_at=datetime.now(),
+            first_seen_at=datetime.now(tz=UTC),
             os=random.choice(os),
         )
 
         self._insert(device)
         return device
 
-    def login_attempted(self) -> LoginAttempt | None:
+    def login_attempted(self) -> LoginAttempt:
         device = self.get_random()
-        if device:
-            return LoginAttempt(
-                id=self._get_next_id(),
-                customer_id=device.customer_id,
-                device_id=device.id,
-                timestamp=datetime.now(),
-                success=random.choice([True, False]),
-                ip_address=self._faker.ipv4(),
-                country=self._faker.country(),
-            )
-        return None
+        return LoginAttempt(
+            id=self._get_next_id(),
+            customer_id=device.customer_id,
+            device_id=device.id,
+            timestamp=datetime.now(tz=UTC),
+            success=random.choice([True, False]),
+            ip_address=self._faker.ipv4(),
+            country=self._faker.country(),
+        )

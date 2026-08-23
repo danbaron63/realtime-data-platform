@@ -1,8 +1,9 @@
-from dataclasses import dataclass
-from generator.base import BaseDatabase, BaseEntity
-from datetime import datetime
-from typing import Iterable
 import random
+from collections.abc import Iterable
+from dataclasses import dataclass
+from datetime import UTC, datetime
+
+from generator.base import BaseDatabase, BaseEntity
 
 
 @dataclass
@@ -31,13 +32,13 @@ class AtmDatabase(BaseDatabase):
         self._account_db = account_db
         self._card_db = card_db
 
-    def atm_withdrawal(self) -> Withdrawal | None:
+    def atm_withdrawal(self) -> Withdrawal:
         card = self._card_db.get_random()
         account = self._account_db.get_item(card.account_id)
 
         withdrawal = Withdrawal(
             id=self._get_next_id(),
-            timestamp=datetime.now(),
+            timestamp=datetime.now(tz=UTC),
             customer_id=card.customer_id,
             account_id=card.account_id,
             card_id=card.id,

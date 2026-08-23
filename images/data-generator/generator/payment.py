@@ -1,9 +1,9 @@
-from dataclasses import dataclass
-from generator.base import BaseDatabase, BaseEntity
-from datetime import datetime
-from typing import Iterable
 import random
+from collections.abc import Iterable
+from dataclasses import dataclass
+from datetime import UTC, datetime
 
+from generator.base import BaseDatabase, BaseEntity
 
 channels = [
     "CARD_PRESENT",
@@ -40,14 +40,14 @@ class PaymentDatabase(BaseDatabase):
         self._card_db = card_db
         self._merchant_db = merchant_db
 
-    def payment_authorised(self) -> Payment | None:
+    def payment_authorised(self) -> Payment:
         card = self._card_db.get_random()
         merchant = self._merchant_db.get_random()
         account = self._account_db.get_item(card.account_id)
 
         payment = Payment(
             id=self._get_next_id(),
-            timestamp=datetime.now(),
+            timestamp=datetime.now(tz=UTC),
             customer_id=card.customer_id,
             account_id=card.account_id,
             card_id=card.id,
