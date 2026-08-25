@@ -8,3 +8,4 @@ faker==40.21.0
 httpx==0.28.1
 names==0.3.0
 requests==2.34.2
+prometheus-client==0.26.0

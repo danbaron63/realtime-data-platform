@@ -21,6 +21,7 @@ from generator.merchant import MerchantDatabase
 from generator.payment import PaymentDatabase
 from generator.persistence import Persistence
 from generator.transfer import TransferDatabase
+from prometheus_client import Counter, Gauge, start_http_server
 
 logging.basicConfig(
     level=logging.INFO,
@@ -50,6 +51,12 @@ def main(rate: float):
     logger.info("Running with rate %s", rate)
     interval_ns = int(1_000_000_000.0 / rate)
     next_event_ns = time.time_ns()
+
+    event_counter = Counter(
+        "data_generator_event_counter",
+        "counter of events created in the data-generator",
+        labelnames=["event"],
+    )
 
     customer_db = CustomerDatabase()
     account_db = AccountDatabase(customer_db)
@@ -82,12 +89,6 @@ def main(rate: float):
         next_event_ns += interval_ns
 
         event_type = random.choices(events, weights=weights, k=1)[0]
-        metrics[event_type] += 1
-        count += 1
-
-        if count % 100 == 0:
-            logger.info(f"Events generated: {metrics}")
-            metrics = {e: 0 for e in metrics}
 
         match event_type:
             case "customer_created":
@@ -115,6 +116,15 @@ def main(rate: float):
 
         if event is not None:
             process_event(event, event_type)
+            event_counter.labels(
+                event=event_type,
+            ).inc()
+            metrics[event_type] += 1
+            count += 1
+
+            if count % 100 == 0:
+                logger.info(f"Events generated: {metrics}")
+                metrics = {e: 0 for e in metrics}
 
 
 def wait_for_schema_registry_healthy(
@@ -238,6 +248,14 @@ if __name__ == "__main__":
         default=1,
     )
     args = parser.parse_args()
+    producer_rate = args.rate
+
+    start_http_server(8000)
+
+    Gauge(
+        "data_generator_producer_rate",
+        "the rate at which events are configured to be produced",
+    ).set(producer_rate)
 
     producer = Producer(
         {
@@ -254,4 +272,4 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM, handle_shutdown)
     signal.signal(signal.SIGINT, handle_shutdown)
 
-    main(args.rate)
+    main(producer_rate)
