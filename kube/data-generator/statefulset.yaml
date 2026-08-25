@@ -35,6 +35,10 @@ spec:
               value: http://redpanda-0.redpanda.default.svc.cluster.local:8081
             - name: DATABASE_PATH
               value: "/mnt/data/data-generator.db"
+          ports:
+            - name: metrics
+              containerPort: 8000
+              protocol: TCP
           volumeMounts:
             - name: generator-data
               mountPath: /mnt/data
