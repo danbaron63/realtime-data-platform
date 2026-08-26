@@ -120,7 +120,7 @@ async def get_features(feature: str, item: Entity):
             status_code=404, detail=f"Feature '{feature}' returned no rows"
         )
 
-    app.state.pinot_time_used_histogram.labels(feature=feature).observe(pinot_response.metrics["timeUsedMs"])
+    app.state.pinot_time_used_histogram.labels(feature=feature).observe(pinot_response.metrics.timeUsedMs)
     return rows[0]
 
 
