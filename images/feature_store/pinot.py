@@ -28,8 +28,8 @@ class ResultTable(msgspec.Struct):
 
 class PinotPayload(msgspec.Struct):
     timeUsedMs: int
-    exceptions: list[dict[str, typing.Any]] = []
-    resultTable: ResultTable | None = None
+    resultTable: ResultTable
+    exceptions: list[dict[str, typing.Any]] = msgspec.field(default_factory=list)
 
 
 class PinotQueryRequest(msgspec.Struct):
