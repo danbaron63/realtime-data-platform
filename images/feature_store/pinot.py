@@ -7,7 +7,6 @@ import msgspec
 from pydantic import JsonValue
 
 logger = logging.getLogger(__name__)
-# p90: 25, p74: 22, p50: 17
 
 class PinotMetrics(msgspec.Struct):
     timeUsedMs: int
