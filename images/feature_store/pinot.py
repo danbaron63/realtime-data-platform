@@ -1,15 +1,40 @@
+import asyncio
 import logging
 import typing
 
-import httpx
+import aiohttp
+import msgspec
 from pydantic import JsonValue
 
 logger = logging.getLogger(__name__)
+# p90: 25, p74: 22, p50: 17
+
+class PinotMetrics(msgspec.Struct):
+    timeUsedMs: int
 
 
-class PinotResponse(typing.NamedTuple):
+class PinotResponse(msgspec.Struct):
     rows: list[dict[str, typing.Any]]
-    metrics: dict[str, typing.Any]
+    metrics: PinotMetrics
+
+
+class DataSchema(msgspec.Struct):
+    columnNames: list[str]
+
+
+class ResultTable(msgspec.Struct):
+    dataSchema: DataSchema
+    rows: list[list[typing.Any]]
+
+
+class PinotPayload(msgspec.Struct):
+    timeUsedMs: int
+    exceptions: list[dict[str, typing.Any]] = []
+    resultTable: ResultTable | None = None
+
+
+class PinotQueryRequest(msgspec.Struct):
+    sql: str
 
 
 class PinotException(Exception):
@@ -26,50 +51,61 @@ class PinotConnectionError(PinotException):
 
 class PinotClient:
     def __init__(self, base_url: str, timeout: float = 5.0):
-        self._client = httpx.AsyncClient(
+        self._client = aiohttp.ClientSession(
             base_url=base_url,
-            timeout=timeout,
+            timeout=aiohttp.ClientTimeout(total=timeout),
         )
+        self._encoder = msgspec.json.Encoder()
+        self._pinot_payload_decoder = msgspec.json.Decoder(PinotPayload)
+        self._json_headers = {
+            "Content-Type": "application/json",
+        }
 
     async def close(self):
-        logger.info("Closing httpx client for pinot")
-        await self._client.aclose()
+        logger.info("Closing http client for pinot")
+        await self._client.close()
 
     async def query(
         self,
         sql: str,
         multi_stage: bool,
-        parameters: dict[str, JsonValue] | None = None,
+        parameters: dict[str, JsonValue],
     ) -> PinotResponse:
         formatted_query = sql.format(**parameters)
+
         endpoint = "/query" if multi_stage else "/query/sql"
+        body = self._encoder.encode(PinotQueryRequest(sql=formatted_query))
 
         try:
-            response = await self._client.post(
+            async with self._client.post(
                 endpoint,
-                json={
-                    "sql": formatted_query,
-                },
-            )
-            response.raise_for_status()
-        except httpx.TimeoutException as te:
+                data=body,
+                headers=self._json_headers,
+            ) as response:
+                response_bytes = await response.read()
+                try:
+                    response.raise_for_status()
+                except aiohttp.ClientResponseError as e:
+                    raise PinotConnectionError(
+                        f"Unsuccessful response from Pinot ({response.status}): {response_bytes.decode("utf-8")}") from e
+
+                payload: PinotPayload = self._pinot_payload_decoder.decode(response_bytes)
+
+        except asyncio.TimeoutError as te:
             raise PinotConnectionError("Pinot connection timed out") from te
-        except httpx.ConnectError as ce:
-            raise PinotConnectionError("Pinot unavailable") from ce
+        except aiohttp.ClientError as ce:
+            raise PinotConnectionError("Failed to communicate with Pinot") from ce
 
-        payload = response.json()
+        if payload.exceptions:
+            raise PinotQueryError(f"Pinot responded with exceptions: {payload.exceptions}")
 
-        if payload.get("exceptions", []):
-            raise PinotQueryError(payload["exceptions"])
-
-        result = payload["resultTable"]
-        columns = result["dataSchema"]["columnNames"]
-        rows = result["rows"]
+        columns = payload.resultTable.dataSchema.columnNames
+        rows = payload.resultTable.rows
 
         records = [dict(zip(columns, row)) for row in rows]
         return PinotResponse(
             rows=records,
-            metrics={
-                "timeUsedMs": payload["timeUsedMs"],
-            }
+            metrics=PinotMetrics(
+                timeUsedMs=payload.timeUsedMs,
+            ),
         )
