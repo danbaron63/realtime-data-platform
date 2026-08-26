@@ -204,6 +204,22 @@ As is with any architecture, this approach is not perfect and does involve a num
 This approach seeks to improve flexibility and total cost of ownership, but this is a trade-off with raw performance and latency
 meaning this solution may not work for some use cases.
 
+#### Online/offline skew
+This is probably the single biggest drawback of this architecture.
+When a stateful stream outputs features to a Kafka topic which then get written to Redis, it is trivial to add another
+consumer that archives those features in lake/warehouse storage.
+This then serves as your training and validation datasets; you can be certain that these datasets were produced using
+the exact system that is used at inference time.
+In theory this should eliminate any chance of [leakage](https://en.wikipedia.org/wiki/Leakage_(machine_learning)) or variability
+in the two datasets (offline store & online store) reducing differences between ML model performance at inference time vs 
+validation time.
+
+With Pinot, such an architecture is not possible as we do not calculate all possible feature values, we calculate only
+those that are required for feature serving.
+Therefore, we must use some other offline system to produce training and validation datasets.
+Without careful governance it is possible that training/validation and inference datasets could diverge hurting ML model 
+performance.
+
 #### Latency
 Relative to a traditional Flink and Redis style architecture, this approach sacrifices feature retrieval latency.
 While Pinot can ingest from Kafka at very low latency, moving feature computation from ingestion to request time means
