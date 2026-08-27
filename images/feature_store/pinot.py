@@ -28,7 +28,7 @@ class ResultTable(msgspec.Struct):
 
 class PinotPayload(msgspec.Struct):
     timeUsedMs: int
-    resultTable: ResultTable
+    resultTable: ResultTable | None = None
     exceptions: list[dict[str, typing.Any]] = msgspec.field(default_factory=list)
 
 
