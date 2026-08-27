@@ -98,6 +98,8 @@ def freshness_check(
             response_ns = time.perf_counter_ns()
             time_taken_upper_bound_ns = response_ns - event_creation_ns
             time_taken_lower_bound_ns = last_request_ns - event_creation_ns
+            last_request_ns = response_ns
+            time.sleep(0.005)
 
         features = response.json()
         tx_count = features["tx_count"]
@@ -115,9 +117,6 @@ def freshness_check(
             ).observe(time_taken_upper_bound_ns / 1000_000)
             assert tx_count == 1
             break
-
-        last_request_ns = response_ns
-        time.sleep(0.005)
 
 
 @lru_cache()
