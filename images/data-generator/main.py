@@ -14,6 +14,7 @@ from confluent_kafka.schema_registry import Schema, SchemaRegistryClient
 from dataclasses_avroschema import AvroModel
 from generator.account import AccountDatabase
 from generator.atm import AtmDatabase
+from generator.base import EmptyDatabaseException
 from generator.card import CardDatabase
 from generator.customer import CustomerDatabase
 from generator.device import DeviceDatabase
@@ -82,49 +83,51 @@ def main(rate: float):
     count = 0
 
     while True:
+        event_type = random.choices(events, weights=weights, k=1)[0]
+
+        try:
+            match event_type:
+                case "customer_created":
+                    event = customer_db.customer_created()
+                case "customer_details_updated":
+                    event = customer_db.customer_details_updated()
+                case "account_opened":
+                    event = account_db.account_opened()
+                case "card_issued":
+                    event = card_db.card_issued()
+                case "device_registered":
+                    event = device_db.device_registered()
+                case "login_attempted":
+                    event = device_db.login_attempted()
+                case "merchant_onboarded":
+                    event = merchant_db.merchant_onboarded()
+                case "payment_authorised":
+                    event = payment_db.payment_authorised()
+                case "atm_withdrawal":
+                    event = atm_db.atm_withdrawal()
+                case "transfer_completed":
+                    event = transfer_db.transfer_completed()
+                case _:
+                    continue
+        except EmptyDatabaseException as e:
+            logger.error(e)
+            continue
+
+        process_event(event, event_type)
+        event_counter.labels(
+            event=event_type,
+        ).inc()
+        metrics[event_type] += 1
+        count += 1
+
+        if count % 100 == 0:
+            logger.info(f"Events generated: {metrics}")
+            metrics = {e: 0 for e in metrics}
+
         now_ns = time.time_ns()
         if now_ns < next_event_ns:
             time.sleep((next_event_ns - now_ns) / 1_000_000_000)
-            continue
         next_event_ns += interval_ns
-
-        event_type = random.choices(events, weights=weights, k=1)[0]
-
-        match event_type:
-            case "customer_created":
-                event = customer_db.customer_created()
-            case "customer_details_updated":
-                event = customer_db.customer_details_updated()
-            case "account_opened":
-                event = account_db.account_opened()
-            case "card_issued":
-                event = card_db.card_issued()
-            case "device_registered":
-                event = device_db.device_registered()
-            case "login_attempted":
-                event = device_db.login_attempted()
-            case "merchant_onboarded":
-                event = merchant_db.merchant_onboarded()
-            case "payment_authorised":
-                event = payment_db.payment_authorised()
-            case "atm_withdrawal":
-                event = atm_db.atm_withdrawal()
-            case "transfer_completed":
-                event = transfer_db.transfer_completed()
-            case _:
-                continue
-
-        if event is not None:
-            process_event(event, event_type)
-            event_counter.labels(
-                event=event_type,
-            ).inc()
-            metrics[event_type] += 1
-            count += 1
-
-            if count % 100 == 0:
-                logger.info(f"Events generated: {metrics}")
-                metrics = {e: 0 for e in metrics}
 
 
 def wait_for_schema_registry_healthy(

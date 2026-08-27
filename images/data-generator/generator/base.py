@@ -79,10 +79,11 @@ class BaseDatabase(ABC):
             return self.get_random()
         return self.get_item(_id)
 
-    def _insert(self, item):
+    def _insert(self, item: BaseEntity):
         item_dict = item.asdict()
         values = [item_dict[f] for f in self._columns]
         self._persistence.execute(self._insert_dml, values)
+        self._ids.append(item.id)
 
     def get_item(self, _id: str) -> BaseEntity:
         result = self._persistence.query(self._get_item_query, [_id])
