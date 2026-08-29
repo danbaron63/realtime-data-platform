@@ -4,20 +4,22 @@
   "metadata": {
     "name": "adfgj4k",
     "namespace": "default",
-    "uid": "a48b6108-b39d-48b9-9b56-46295b264406",
-    "resourceVersion": "1787839137156017",
-    "generation": 1,
-    "creationTimestamp": "2026-08-27T13:58:57Z",
+    "uid": "417841f8-3150-450c-b27b-cee7495f88b9",
+    "resourceVersion": "1787842797312989",
+    "generation": 2,
+    "creationTimestamp": "2026-08-25T03:42:16Z",
     "labels": {
-      "grafana.app/deprecatedInternalID": "3304927651397632"
+      "grafana.app/deprecatedInternalID": "2424958346330112"
     },
     "annotations": {
       "grafana.app/createdBy": "access-policy:service",
       "grafana.app/managedBy": "classic-file-provisioning",
       "grafana.app/managerId": "sidecarProvider",
-      "grafana.app/sourceChecksum": "2915cdd74a73130ab37e024479d7f4fa",
+      "grafana.app/sourceChecksum": "8fea0db4c78adbde8a920f7c9e8a9c58",
       "grafana.app/sourcePath": "/tmp/dashboards/feature-store.json",
-      "grafana.app/sourceTimestamp": "1787838745000",
+      "grafana.app/sourceTimestamp": "1787842797000",
+      "grafana.app/updatedBy": "access-policy:service",
+      "grafana.app/updatedTimestamp": "2026-08-27T14:59:57Z",
       "grafana.app/folder": ""
     }
   },
@@ -973,7 +975,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "container_memory_usage_bytes{pod=~\"feature-store-.*\", container=\"feature-store\"} / 1_000_000",
+                        "expr": "container_memory_usage_bytes{pod=~\"feature-store-.*\"} / 1_000_000",
                         "legendFormat": "MB",
                         "range": true
                       },
