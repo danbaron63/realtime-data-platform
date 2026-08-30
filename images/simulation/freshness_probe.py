@@ -17,7 +17,7 @@ from prometheus_client import Histogram, start_http_server
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
-http_client = httpx.Client(timeout=0.5)
+http_client = httpx.Client(timeout=3)
 AMOUNT = 100.0
 CURRENCY = "GBP"
 CHANNEL = "TEST"
