@@ -4,22 +4,20 @@
   "metadata": {
     "name": "adfgj4k",
     "namespace": "default",
-    "uid": "417841f8-3150-450c-b27b-cee7495f88b9",
-    "resourceVersion": "1787842797312989",
-    "generation": 2,
-    "creationTimestamp": "2026-08-25T03:42:16Z",
+    "uid": "2cad4c79-595f-44b6-b2d6-7c6d631e6d2f",
+    "resourceVersion": "1788104318575997",
+    "generation": 1,
+    "creationTimestamp": "2026-08-30T15:38:38Z",
     "labels": {
-      "grafana.app/deprecatedInternalID": "2424958346330112"
+      "grafana.app/deprecatedInternalID": "4417179140653056"
     },
     "annotations": {
       "grafana.app/createdBy": "access-policy:service",
       "grafana.app/managedBy": "classic-file-provisioning",
       "grafana.app/managerId": "sidecarProvider",
-      "grafana.app/sourceChecksum": "8fea0db4c78adbde8a920f7c9e8a9c58",
+      "grafana.app/sourceChecksum": "0e4b7851dd23bda5b7b1311733b51729",
       "grafana.app/sourcePath": "/tmp/dashboards/feature-store.json",
-      "grafana.app/sourceTimestamp": "1787842797000",
-      "grafana.app/updatedBy": "access-policy:service",
-      "grafana.app/updatedTimestamp": "2026-08-27T14:59:57Z",
+      "grafana.app/sourceTimestamp": "1788103989000",
       "grafana.app/folder": ""
     }
   },
@@ -2931,7 +2929,7 @@
                       "kind": "DataQuery",
                       "spec": {
                         "editorMode": "code",
-                        "expr": "sum by (namespace, pod) (container_memory_usage_bytes{pod=\"pinot-broker-0\"}) / on (namespace, pod) kube_pod_container_resource_requests{resource=\"memory\", pod=\"pinot-broker-0\"} * 100",
+                        "expr": "sum by (namespace, pod) (container_memory_usage_bytes{pod=\"pinot-zookeeper-0\"}) / on (namespace, pod) kube_pod_container_resource_requests{resource=\"memory\", pod=\"pinot-zookeeper-0\"} * 100",
                         "instant": false,
                         "legendFormat": "%",
                         "range": true
