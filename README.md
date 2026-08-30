@@ -156,7 +156,7 @@ The follow event production rates (events/second) were tested:
 * 50
 * 55
 
-##### Methodology
+#### Methodology
 The following numbers are queried from prometheus over a 15-minute period.
 After changing the rate in the `data-generator` I waited for the metrics to settle - as this is running a lot of services
 in a heavily constrained environment with no autoscaling, changes to services can lead to very jittery metrics.
