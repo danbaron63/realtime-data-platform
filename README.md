@@ -146,13 +146,18 @@ I instrumented the data generator service to monitor event production to ensure 
 I've then taken screenshots of the key metrics collected across the feature store, pinot and the freshness probe to demonstrate
 the achievable latencies of this architecture on my constrained hardware.
 
-The follow event production rates were tested:
-* 4 events/second
-* 10 events/second
-* 50 events/second
+The follow event production rates (events/second) were tested:
+* 4
+* 10
+* 15
+* 25
+* 35
+* 45
+* 50
+* 55
 
 ##### Methodology
-The following numbers are queried from prometheus over a 10-minute period.
+The following numbers are queried from prometheus over a 15-minute period.
 After changing the rate in the `data-generator` I waited for the metrics to settle - as this is running a lot of services
 in a heavily constrained environment with no autoscaling, changes to services can lead to very jittery metrics.
 
@@ -162,28 +167,74 @@ scaling *
 histogram_quantile(
   0.99|0.9|0.5,
   sum(
-    increase(relevant_metric_name[10m])
+    increase(relevant_metric_name[15m])
   ) by (le)
 )
 ```
+Where `relevant_metric_name` is the name of the metric and `scaling` scales the unit to seconds (e.g. seconds -> 1000ms).
+
+Note: the rate is the configured `data-generator` rate which produces various events at random according to some configured 
+probability distribution.
+Not every event may be relevant to the features tested here.
+For the sake of completeness, I've compiled a list of event types used and scaled the rate down to the actual number of 
+relevant events produced per second.
+
+The two feature sets requested from `simulate-consumer` (`customer_payment_6h` and `payment_6h`) use the
+following events with the corresponding production probability for any given event:
+
+| event type                 | event production probability |
+|----------------------------|------------------------------|
+| `atm_withdrawal`           | 20/141                       |
+| `payment_authorised`       | 40/141                       |
+| `transfer_completed`       | 25/141                       |
+| `customer_created`         | 5/141                        |
+| `customer_details_updated` | 1/141                        |
+
+I.e. for each event produced, there's 91/141 chance that it affects the features during benchmarking (sum of probabilities).
+Therefore, the event production _rate_ and the _actual_ rate of relevant events is (`rate * 91/141`):
+
+| rate | relevant event production rate |
+|------|--------------------------------|
+| 4    | 2.6                            |
+| 10   | 6.5                            |
+| 15   | 9.7                            |
+| 25   | 16.1                           |
+| 35   | 22.6                           |
+| 45   | 29.0                           |
+| 50   | 32.3                           |
+| 55   | 35.5                           |
 
 #### Feature store response times
 This measures the time response time of the feature store API.
 
 | rate | p50 response times (ms) | p90 response times (ms) | p99 response times (ms) |
 |------|-------------------------|-------------------------|-------------------------|
-| 4    | 18                      | 29                      | 50                      |
-| 10   | 17                      | 24                      | 47                      |
-| 50   | 19                      | 36                      | 66                      |
+| 4    | 14.28                   | 23.84                   | 46.61                   |
+| 10   | 16.25                   | 24.77                   | 47.90                   |
+| 15   | 15.33                   | 24.01                   | 48.77                   |
+| 25   | 14.64                   | 23.45                   | 43.90                   |
+| 35   | 18.12                   | 24.66                   | 48.43                   |
+| 45   | 16.58                   | 24.35                   | 71.62                   |
+| 50   | 18.56                   | 33.98                   | 92.27                   |
+| 55   | 20.16                   | 46.43                   | 444.74                  |
+
+![Feature Store Response Time vs Rate](./media/charts/feature-store-response-times.png)
 
 #### Pinot query times
 This measures the time that Pinot takes to process a query and generate feature data.
 
 | rate | p50 query times (ms) | p90 query times (ms) | p99 query times (ms) |
 |------|----------------------|----------------------|----------------------|
-| 4    | 13                   | 23                   | 42                   |
-| 10   | 12                   | 20                   | 32                   |
-| 50   | 14                   | 24                   | 57                   |
+| 4    | 12.15                | 18.92                | 34.35                |
+| 10   | 12.74                | 21.92                | 35.91                |
+| 15   | 12.50                | 19.27                | 39.60                |
+| 25   | 12.28                | 17.84                | 28.81                |
+| 35   | 13.34                | 21.77                | 38.88                |
+| 45   | 13.20                | 20.66                | 66.77                |
+| 50   | 14.11                | 25.69                | 88.02                |
+| 55   | 16.50                | 38.70                | 300.00               |
+
+![Pinot Query Time vs Rate](./media/charts/pinot-query-time.png)
 
 #### Freshness probe end to end latency times
 This measures the upper bound time it takes from an event being created to it being successfully queried in the feature store
@@ -193,11 +244,18 @@ via the feature store API.
 
 | rate | p50 latency (ms) | p90 latency (ms) | p99 latency (ms) |
 |------|------------------|------------------|------------------|
-| 4    | 31               | 57               | 110              |
-| 10   | 27               | 46               | 60               |
-| 50   | 35               | 62               | 270              |
+| 4    | 19.67            | 39.61            | 52.75            |
+| 10   | 23.75            | 46.08            | 67.67            |
+| 15   | 21.71            | 43.05            | 49.30            |
+| 25   | 21.92            | 43.82            | 52.75            |
+| 35   | 22.84            | 44.51            | 52.75            |
+| 45   | 28.25            | 46.05            | 52.75            |
+| 50   | 29.07            | 49.53            | 128.00           |
+| 55   | 33.07            | 59.69            | 511.00           |
 
-Screenshots of the full metrics can be viewed [here](./DASHBOARDS.md).
+![Freshness Probe End to End Latency vs Rate](./media/charts/freshness-probe.png)
+
+Screenshots of sample metrics can be viewed [here](./DASHBOARDS.md).
 
 ### Trade-offs and drawbacks
 As is with any architecture, this approach is not perfect and does involve a number of trade-offs.
