@@ -24,7 +24,7 @@ def main():
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGTERM, shutdown)
 
-    event_queue = queue.Queue(maxsize=1000)
+    event_queue = queue.Queue(maxsize=40)
     event_queue_size_gauge = Gauge(
         "simulate_consumer_event_queue_size_gauge",
         "approximate size of the internal event queue of simulate_consumer",
